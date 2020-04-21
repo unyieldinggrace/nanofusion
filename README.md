@@ -68,3 +68,26 @@ Now, let's suppose that C drops out before sending funds to CD. Everyone else ha
 * EF -> F
 
 We don't need any path where ABCDEF pays to E, then to B, then to C. Since transactions are in a tree, not individual, there are fewer valid orders to execute them in. When everyone pays to one account, we need to be able to execute send transactions in any order, because no player can depend on any other in case one drops out. But with a tree, if C doesn't pay to CD, then CD cannot pay to ABCD, so the chain goes no further, and D can get execute a send transaction for a refund from CD without worrying about what A, B, E or F are doing.
+
+## Hiding linkages between inputs and outputs
+
+One problem that still remains is hiding the linkages between inputs and outputs. The mixing protocol above allows mixing funds, safe in the knowledge that no funds can be stolen at any point. However, mixing is much less useful if the other participants, or a server that coordinates the process, is able to tell that the same person owns input account A and output account B. The point of mixing is to obscure that information.
+
+To make that happen, we need a way for all of the participants to communicate a list of input and output accounts to each other without knowing which participant provided which account (and ideally without the server knowing either). To do that, we implement a scheme called "ring communication".
+
+Suppose that 3 participants connect to a server, and announce that they will be providing 1 input each (iA, iB, iC) and 2 outputs each (oA, oB, oC, oD, oE, oF).
+
+Each participant supplies a public encryption key to the server, so that the server cannot read messages sent between players. To keep things anonymous, each participant supplies 6 new accounts, 18 accounts in total.
+
+Ring communication occurs by the server notifying a random participant to start the ring by sending a message to their left-side neighbour. The participant does this by sending a message to the server, encrypted with their left-side neighbour's public key.
+
+Participants start ring communication by sending sets of addresses to each other (say, 3 at a time), randomised from their own and others' lists. At any time, no player (except the initiator) knows whether the player before them is the initiator, so they do not know whether the first 3 addresses belong together. This goes on until all participants have seen 18 unique addresses, and  verified that all of their own desired outputs are present in that list of 18.
+
+Ring communication begins again, this time with each player passing on the full list of 18 addresses, minus 1-4 addresses that are theirs, but which they do not wish to use. They randomly choose how many of their own to remove (1-4), so that it is not clear whether the list is down 2 because of 2 players, or one player removing 2 addresses. The first player in the ring must remove at least 2 to preserve the ambiguity.
+
+Once the list of addresses is down to 6, all unwanted addresses have been discarded, and no player knows which addresses belong to any other player.
+
+At this point, the server creates a binary tree for the input accounts, and sends messages to the participants to have them create aggregated-signature addresses matching the layers of the binary tree, down to the single root element, which is the mixing account. The server also constructs a set of transactions _out_ of the mixing account, which it asks all participants to sign.
+
+Once all of these transactions have been created and signed, all participants can go ahead and send their funds out of their input accounts down to the first layer of the binary tree, safe in the knowledge that the only possible outcomes are that the mix succeeds (and no one else knows which output accounts are theirs), or all of their funds are refunded to their original input accounts.
+
