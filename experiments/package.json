@@ -1,0 +1,14 @@
+{
+  "name": "aggsigjs",
+  "version": "1.0.0",
+  "description": "",
+  "main": "testblocksigning.js",
+  "scripts": {},
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "bn.js": "^5.1.1",
+    "elliptic": "^6.5.2",
+    "nanocurrency": "^2.4.0"
+  }
+}

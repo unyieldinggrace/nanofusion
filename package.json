@@ -1,0 +1,28 @@
+{
+  "name": "nanofusion",
+  "version": "0.0.3",
+  "description": "Create joint-accounts and mix funds using the Nano crytocurrency.",
+  "main": "server.js",
+  "scripts": {
+    "test": "ava",
+    "start": "node server.js",
+    "install-start": "npm install && npm start",
+    "debug": "node --inspect-brk server.js"
+  },
+  "keywords": [
+    "Nano",
+    "Privacy",
+    "Mix",
+    "Joint",
+    "Account",
+    "Cryptocurrency"
+  ],
+  "author": "Nick Watts",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^0.19.2",
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "express-ws": "^4.0.0"
+  }
+}

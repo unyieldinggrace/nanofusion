@@ -1,0 +1,58 @@
+{
+  "name": "client",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@testing-library/jest-dom": "^4.2.4",
+    "@testing-library/react": "^9.5.0",
+    "@testing-library/user-event": "^7.2.1",
+    "axios": "^0.19.2",
+    "bignumber.js": "^9.0.0",
+    "bn.js": "^5.1.1",
+    "jsdom": "^16.2.2",
+    "nanocurrency": "^2.4.0",
+    "qrcode-generator": "^1.4.4",
+    "react": "^16.13.1",
+    "react-bootstrap": "^1.0.1",
+    "react-dom": "^16.13.1",
+    "react-router-dom": "^5.1.2",
+    "react-scripts": "3.4.1",
+    "react-youtube": "^7.11.2"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "ava --verbose",
+    "eject": "react-scripts eject"
+  },
+  "proxy": "http://localhost:5000",
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "ava": "^3.8.2",
+    "deepequal": "0.0.1",
+    "esm": "^3.2.25",
+    "variable-diff": "^2.0.1"
+  },
+  "ava": {
+    "require": [
+      "esm"
+    ],
+    "files": [
+      "src/tests/**/*.test.js"
+    ]
+  }
+}
