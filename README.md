@@ -6,6 +6,10 @@ NanoFusion is a trustless mixing protocol for the Nano cryptocurrency. It is loo
 
 If you want to actually try running the software, see [GettingStarted.md](GettingStarted.md).
 
+## See it in action
+Demo video: [https://www.youtube.com/watch?v=E-m64VPORbw](https://www.youtube.com/watch?v=E-m64VPORbw)
+Video whitepaper (less detailed, but fun and using a whiteboard): [https://www.youtube.com/watch?v=CtMMETZcAQY](https://www.youtube.com/watch?v=CtMMETZcAQY)
+
 ## Describing the Problem
 
 Because Nano is account-based, rather than UTXO-based, some changes are required in order to created a trustless mixing protocol. In a UTXO-based currency, one transaction can have many inputs. CashFusion works by having these many inputs come from different owners. In contrast, each Nano transaction has exactly one sending account and one receiving account. This makes it difficult to mix coins without trusting a central server, because at some point, someone has to have the authority to cryptographically sign the send-transactions from the mixing account. Whoever can sign transactions from the mixing account can send all the money to themselves if they wish.
