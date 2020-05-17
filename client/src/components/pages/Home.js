@@ -100,11 +100,6 @@ class Home extends Component {
 							</a>
 						</Col>
 						<Col>
-							<Link to={'./faq'}>
-								FAQ
-							</Link>
-						</Col>
-						<Col>
 						</Col>
 					</Row>
 					<Row>
