@@ -7,8 +7,8 @@ NanoFusion is a trustless mixing protocol for the Nano cryptocurrency. It is loo
 If you want to actually try running the software, see [GettingStarted.md](GettingStarted.md).
 
 ## See it in action
-Demo video: [https://www.youtube.com/watch?v=E-m64VPORbw](https://www.youtube.com/watch?v=E-m64VPORbw)
-Video whitepaper (less detailed, but fun and using a whiteboard): [https://www.youtube.com/watch?v=CtMMETZcAQY](https://www.youtube.com/watch?v=CtMMETZcAQY)
+* Demo video: [https://www.youtube.com/watch?v=E-m64VPORbw](https://www.youtube.com/watch?v=E-m64VPORbw)
+* Video whitepaper: [https://www.youtube.com/watch?v=CtMMETZcAQY](https://www.youtube.com/watch?v=CtMMETZcAQY)
 
 ## Describing the Problem
 
