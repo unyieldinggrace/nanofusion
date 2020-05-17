@@ -10,11 +10,7 @@ To get around this trust problem, we could modify the Nano protocol in some way 
 
 Nano uses the Ed25519 curve, which means its signatures are Schnorr signatures. Schnorr signatures have the useful property that aggregated signatures can exist which are indistinguishable from single signatures. An aggregate signature is a signature that is created by two or more parties collaborating to sign a message, without any of the parties having to reveal their private key to the others. This is useful, because once we create an account that can be signed with an aggregate signature, transactions can only occur on that account if all the signers individually agree to them. Because these aggregate signatures are indistinguishable from single signatures, a transaction for this type of joint account can be submitted to the Nano network and verified by the nodes as if it were any other transaction.
 
-There is javascript code in this repository for creating an aggregate signature on the Ed25519 curve. It is currently incomplete and does not work. But there is no reason why it should not be possible to make it work, once the current issues are resolved. It is essentially an attempt at a javascript implementation of the Rust code from this repository: https://github.com/KZen-networks/multi-party-eddsa
-
-The Rust code from KZen-networks does work. The problems that remain are something in the Javascript implementation, not the algorithm itself. The KZen-networks repository has details of the algorithm itself here: https://github.com/KZen-networks/multi-party-eddsa/wiki/Aggregated-Ed25519-Signatures
-
-Once the kinks in the Javascript version are worked out, the last step is to convert it from using SHA-512 hashes to Blake2 hashes (which are the hashes used natively by Nano). Once this is done, it should be possible to use one of these aggregate signatures to sign a Nano block, which can be verified by any existing Nano node.
+There is javascript code in this repository for creating an aggregate signature on the Ed25519 curve. The original [Rust implementation](https://github.com/KZen-networks/multi-party-eddsa) by KZen Networks uses a SHA-512 hash. This javascript implementation uses the Ed25519 implementation in the [elliptic](https://www.npmjs.com/package/elliptic) npm library, but replaces the SHA-512 hashes with Blake2B hashes (using [blakejs](https://www.npmjs.com/package/blakejs)) in order to be compatible with Nano.
 
 ## The trustless mixing algorithm
 
@@ -38,12 +34,12 @@ To solve the refund problem, we simply pre-sign multiple alternative sets of tra
 
 For instance, if we were going to mix accounts A, B and C, then we would have all players sign transactions that send out the mixed funds (the success case), but also sign the following sequences of transactions:
 
-Mix -> A, Mix -> B
-Mix -> A, Mix -> C
-Mix -> B, Mix -> A
-Mix -> B, Mix -> C
-Mix -> C, Mix -> A
-Mix -> C, Mix -> B
+* Mix -> A, Mix -> B
+* Mix -> A, Mix -> C
+* Mix -> B, Mix -> A
+* Mix -> B, Mix -> C
+* Mix -> C, Mix -> A
+* Mix -> C, Mix -> B
 
 This way, no matter who drops out, the other participants will be able to redeem their funds. For example, if B drops out, then we could execute the sequence `Mix -> A, Mix -> C`. If both A and B drop out, then C can still redeem their funds, because they can execute the `Mix -> C` transaction from either the `Mix -> C, Mix -> A` sequence or the `Mix -> C, Mix -> B` sequence.
 
