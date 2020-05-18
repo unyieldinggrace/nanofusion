@@ -2,13 +2,17 @@
 
 NanoFusion is a trustless mixing protocol for the Nano cryptocurrency. It is loosely inspired by CashFusion (https://github.com/cashshuffle/spec/blob/master/CASHFUSION.md), the protocol developed by Jonald Fyookball for Bitcoin Cash.
 
-## Getting Started
+### Getting Started
 
 If you want to actually try running the software, see [GettingStarted.md](GettingStarted.md).
 
-## See it in action
+### See it in action
 * Demo video: [https://www.youtube.com/watch?v=E-m64VPORbw](https://www.youtube.com/watch?v=E-m64VPORbw)
 * Video whitepaper: [https://www.youtube.com/watch?v=CtMMETZcAQY](https://www.youtube.com/watch?v=CtMMETZcAQY)
+
+### Status and Security Issues
+
+NanoFusion is currently in an alpha (or even pre-alpha) state. The code published here is intended as a proof-of-concept ONLY. There are some outstanding security issues, meaning this software is not ready to be used for anything other than experimentation. You can see more information about these outstanding issues [in the GitHub issue tracker](https://github.com/unyieldinggrace/nanofusion/issues).
 
 ## Describing the Problem
 
