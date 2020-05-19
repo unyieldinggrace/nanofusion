@@ -5,6 +5,7 @@ class BlockSigner {
 	constructor(cryptoUtils, ec) {
 		this.cryptoUtils = cryptoUtils;
 		this.ec = ec;
+		this.zValues = {};
 	}
 
 	GetPublicKeyFromPrivate(privateKey) {
@@ -37,14 +38,14 @@ class BlockSigner {
 	}
 
 	GetRCommitment(privateKey, messageToSign) {
-		let playerData = this.getPlayerData(privateKey);
+		let playerData = this.getPlayerData(privateKey, messageToSign);
 		let sigComponents = this.getSignatureComponentsForPlayer(playerData, messageToSign);
 
 		return sigComponents['RPointCommitment'];
 	}
 
 	GetRPoint(privateKey, messageToSign) {
-		let playerData = this.getPlayerData(privateKey);
+		let playerData = this.getPlayerData(privateKey, messageToSign);
 		let sigComponents = this.getSignatureComponentsForPlayer(playerData, messageToSign);
 
 		return sigComponents['RPoint'];
@@ -53,7 +54,7 @@ class BlockSigner {
 	GetSignatureContribution(privateKey, messageToSign, pubKeys, RPoints) {
 		let messageBytes = this.cryptoUtils.HexToByteArray(messageToSign);
 
-		let playerData = this.getPlayerData(privateKey);
+		let playerData = this.getPlayerData(privateKey, messageToSign);
 		let sigComponents = this.getSignatureComponentsForPlayer(playerData, messageToSign);
 		let aggregatedRPoint = this.getAggregatedRPoint(RPoints);
 
@@ -168,17 +169,37 @@ class BlockSigner {
 		return this.ec.hashInt.apply(this.ec, hashArguments);
 	}
 
-	getPlayerData(secret) {
+	getPlayerData(secret, messageToSign) {
 		let key = this.ec.keyFromSecret(secret); // hex string, array or Buffer
-		let zValue =  this.cryptoUtils.ByteArrayToHex(blakejs.blake2b(this.cryptoUtils.HexToByteArray(secret)));
 
 		return {
 			'secretKeyBytes': key.privBytes(),
 			'publicKeyBytes': key.pubBytes(),
 			'publicKeyPoint': this.ec.decodePoint(key.pubBytes()),
 			'messagePrefix': key.messagePrefix(),
-			'zValue': this.cryptoUtils.HexToByteArray(zValue)
+			'zValue': this.getZValue(secret, messageToSign)
 		};
+	}
+
+	getZValue(secret, messageToSign) {
+		if (!this.zValues[secret][messageToSign]) {
+			if (!this.zValues[secret]) {
+				this.zValues[secret] = {};
+			}
+
+			this.zValues[secret][messageToSign] = this.getRandomBytes(32);
+		}
+
+		return this.zValues[secret][messageToSign];
+	}
+
+	getRandomBytes(length) {
+		let result = [];
+		for (let i = 0; i < length; i++) {
+			result.push(Math.floor(Math.random() * 256));
+		}
+
+		return result;
 	}
 
 	getSignatureComponentsForPlayer(playerData, message) {

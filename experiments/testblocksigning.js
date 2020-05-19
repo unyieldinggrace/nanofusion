@@ -20,7 +20,9 @@ let blake2bhashInt = function () {
 ec.hashInt = blake2bhashInt;
 
 function getPlayerData(secret) {
-	// I don't see any reason why the zValue can't be derived deterministically from the secret key.
+	// To prevent key re-use attacks, the zValue should be a random value per-message in production. Here it is derived
+	// deterministically to ensure consistent output on repeated runs of this demo program. Consistent output aids in the
+	// debugging process.
 	let zValue =  byteArrayToHex(blakejs.blake2b(hexToByteArray(secret)));
 	let key = ec.keyFromSecret(secret); // hex string, array or Buffer
 

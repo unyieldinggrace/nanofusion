@@ -1,8 +1,7 @@
 import test from 'ava';
-import BlockSigner from "../../model/Cryptography/BlockSigner";
 import * as NanoCurrency from "nanocurrency";
 import * as BN from 'bn.js';
-import * as elliptic from 'elliptic';
+import BlockSigner from "../../model/Cryptography/BlockSigner";
 import CryptoUtils from "../../model/Cryptography/CryptoUtils";
 import Factory from "../../model/Factory";
 
