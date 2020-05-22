@@ -2,7 +2,8 @@ import * as elliptic from 'elliptic';
 import * as blakejs from 'blakejs';
 import config from '../config';
 import CryptoUtils from "./Cryptography/CryptoUtils";
-import JointAccountClientOld from "./Client/JointAccountClient";
+import JointAccountClient from "./Client/JointAccountClient";
+import MixSessionClient from "./Client/MixSessionClient";
 import AccountFinder from "./Cryptography/AccountFinder";
 import NanoNodeClient from "./NanoNode/NanoNodeClient";
 import BlockBuilder from "./Cryptography/BlockBuilder";
@@ -79,9 +80,23 @@ class Factory {
 	}
 
 	createJointAccountClient() {
-		return new JointAccountClientOld(
+		return new JointAccountClient(
 			this.GetSessionClient(),
 			this.GetAccountFinder(),
+			this.GetNanoNodeClient(),
+			this.GetBlockBuilder(),
+			this.GetBlockSigner(),
+			this.GetSignatureDataCodec()
+		);
+	}
+
+	GetMixSessionClient() {
+		return this.mixSessionClient = this.getOrCreate(this.mixSessionClient, this.createMixSessionClient.bind(this));
+	}
+
+	createMixSessionClient() {
+		return new MixSessionClient(
+			this.GetSessionClient(),
 			this.GetNanoNodeClient(),
 			this.GetBlockBuilder(),
 			this.GetBlockSigner(),

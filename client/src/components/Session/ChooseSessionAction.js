@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import {Container, Row} from 'react-bootstrap';
 import SessionActionCard from './SessionActionCard';
 import UseJointAccount from './UseJointAccount';
+import UseMixer from './UseMixer';
 import InviteModal from "./InviteModal";
 import EventTypes from "../../model/EventTypes";
 
@@ -18,6 +19,7 @@ class ChooseSessionAction extends Component {
 		this.onUseJointAccountClicked = this.onUseJointAccountClicked.bind(this);
 		this.onStartMixSessionClicked = this.onStartMixSessionClicked.bind(this);
 		this.onChurnFundsClicked = this.onChurnFundsClicked.bind(this);
+		this.onEscrowClicked = this.onEscrowClicked.bind(this);
 		this.onJointAccountInviteAccepted = this.onJointAccountInviteAccepted.bind(this);
 		this.onJointAccountInviteClosed = this.onJointAccountInviteClosed.bind(this);
 	}
@@ -39,10 +41,15 @@ class ChooseSessionAction extends Component {
 
 	onStartMixSessionClicked() {
 		console.log('Start mix session');
+		this.setState({ChosenAction: 'UseMixer'});
 	}
 
 	onChurnFundsClicked() {
 		console.log('Churn funds');
+	}
+
+	onEscrowClicked() {
+		console.log('Escrow');
 	}
 
 	componentDidMount() {
@@ -59,6 +66,8 @@ class ChooseSessionAction extends Component {
 		switch (this.state.ChosenAction) {
 			case 'UseJointAccount':
 				return (<UseJointAccount JointAccountClient={this.props.JointAccountClient} FromInvite={this.state.UseJointAccountFromInvite} />);
+			case 'UseMixer':
+				return (<UseMixer MixSessionClient={this.props.MixSessionClient} />);
 			default:
 				break;
 		}
@@ -85,6 +94,9 @@ class ChooseSessionAction extends Component {
 					</SessionActionCard>
 					<SessionActionCard CardTitle="Churn Funds" CardImage='./icons/churn.png' onCardClicked={this.onChurnFundsClicked}>
 						Move your funds through a series of intermediate accounts to disconnect them from your identity.
+					</SessionActionCard>
+					<SessionActionCard CardTitle="Escrow" CardImage='./icons/escrow.png' onCardClicked={this.onEscrowClicked}>
+						Give a third party the authority to pass on or refund your Nano, without the ability to steal it.
 					</SessionActionCard>
 				</Row>
 			</Container>
