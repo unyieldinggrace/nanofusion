@@ -1,4 +1,4 @@
-import EventTypes from "../EventTypes";
+import JointAccountEventTypes from "../EventTypes/JointAccountEventTypes";
 
 class BaseClient {
 	constructor(sessionClient) {

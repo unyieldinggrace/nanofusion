@@ -6,7 +6,7 @@ class SignatureNegotiator {
 		this.ec = ec;
 	}
 
-	
+
 
 }
 

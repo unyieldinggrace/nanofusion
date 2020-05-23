@@ -4,7 +4,7 @@ import SessionActionCard from './SessionActionCard';
 import UseJointAccount from './UseJointAccount';
 import UseMixer from './UseMixer';
 import InviteModal from "./InviteModal";
-import EventTypes from "../../model/EventTypes";
+import JointAccountEventTypes from "../../model/EventTypes/JointAccountEventTypes";
 
 class ChooseSessionAction extends Component {
 	constructor(props) {

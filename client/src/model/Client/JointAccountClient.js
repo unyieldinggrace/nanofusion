@@ -1,4 +1,4 @@
-import EventTypes from "../EventTypes";
+import JointAccountEventTypes from "../EventTypes/JointAccountEventTypes";
 import BaseClient from "./BaseClient";
 import NanoAmountConverter from "../Cryptography/NanoAmountConverter";
 
@@ -22,17 +22,17 @@ class JointAccountClient extends BaseClient {
 	}
 
 	SetUp() {
-		this.sessionClient.SubscribeToEvent(EventTypes.ReadyToUseJointAccount, this.onPeerSignalsReady.bind(this));
-		this.sessionClient.SubscribeToEvent(EventTypes.RequestForPublicKey, this.onPeerRequestsPublicKey.bind(this));
-		this.sessionClient.SubscribeToEvent(EventTypes.RequestForRPoint, this.onPeerRequestsRPoint.bind(this));
-		this.sessionClient.SubscribeToEvent(EventTypes.RequestForSignatureContribution, this.onPeerRequestsSignatureContribution.bind(this));
-		this.sessionClient.SubscribeToEvent(EventTypes.ProvideRCommitment, this.onPeerProvidesRCommitment.bind(this));
-		this.sessionClient.SubscribeToEvent(EventTypes.ProvideRPoint, this.onPeerProvidesRPoint.bind(this));
-		this.sessionClient.SubscribeToEvent(EventTypes.ProvideSignatureContribution, this.onPeerProvidesSignatureContribution.bind(this));
-		this.sessionClient.SubscribeToEvent(EventTypes.PeerDisconnected, this.onPeerDisconnected.bind(this));
-		this.sessionClient.SubscribeToEvent(EventTypes.ProposeJointAccountTransaction, this.onJointAccountTransactionProposed.bind(this));
+		this.sessionClient.SubscribeToEvent(JointAccountEventTypes.ReadyToUseJointAccount, this.onPeerSignalsReady.bind(this));
+		this.sessionClient.SubscribeToEvent(JointAccountEventTypes.RequestForPublicKey, this.onPeerRequestsPublicKey.bind(this));
+		this.sessionClient.SubscribeToEvent(JointAccountEventTypes.RequestForRPoint, this.onPeerRequestsRPoint.bind(this));
+		this.sessionClient.SubscribeToEvent(JointAccountEventTypes.RequestForSignatureContribution, this.onPeerRequestsSignatureContribution.bind(this));
+		this.sessionClient.SubscribeToEvent(JointAccountEventTypes.ProvideRCommitment, this.onPeerProvidesRCommitment.bind(this));
+		this.sessionClient.SubscribeToEvent(JointAccountEventTypes.ProvideRPoint, this.onPeerProvidesRPoint.bind(this));
+		this.sessionClient.SubscribeToEvent(JointAccountEventTypes.ProvideSignatureContribution, this.onPeerProvidesSignatureContribution.bind(this));
+		this.sessionClient.SubscribeToEvent(JointAccountEventTypes.PeerDisconnected, this.onPeerDisconnected.bind(this));
+		this.sessionClient.SubscribeToEvent(JointAccountEventTypes.ProposeJointAccountTransaction, this.onJointAccountTransactionProposed.bind(this));
 
-		this.sessionClient.SendEvent(EventTypes.RequestForPublicKey, {});
+		this.sessionClient.SendEvent(JointAccountEventTypes.RequestForPublicKey, {});
 	}
 
 	TearDown() {
@@ -136,7 +136,7 @@ class JointAccountClient extends BaseClient {
 	initiateTransactionApproval(proposedTransaction) {
 		this.transactionsApproved.push(proposedTransaction);
 		this.blocksInitiated.push(proposedTransaction.Hash);
-		this.sessionClient.SendEvent(EventTypes.ProposeJointAccountTransaction, proposedTransaction);
+		this.sessionClient.SendEvent(JointAccountEventTypes.ProposeJointAccountTransaction, proposedTransaction);
 		this.provideRCommitmentForHash(proposedTransaction.Hash);
 	}
 
@@ -144,7 +144,7 @@ class JointAccountClient extends BaseClient {
 		let RCommitment = this.getMyRCommitment(hash);
 		let encodedRCommitment = this.signatureDataCodec.EncodeRCommitment(RCommitment);
 
-		this.sessionClient.SendEvent(EventTypes.ProvideRCommitment, {
+		this.sessionClient.SendEvent(JointAccountEventTypes.ProvideRCommitment, {
 			PubKey: this.signatureDataCodec.EncodePublicKey(this.getMyPublicKey()),
 			MessageToSign: hash,
 			RCommitment: encodedRCommitment,
@@ -187,7 +187,7 @@ class JointAccountClient extends BaseClient {
 	}
 
 	sendPublicKeyToPeers() {
-		this.sessionClient.SendEvent(EventTypes.ReadyToUseJointAccount, {
+		this.sessionClient.SendEvent(JointAccountEventTypes.ReadyToUseJointAccount, {
 			'PubKey': this.signatureDataCodec.EncodePublicKey(this.getMyPublicKey())
 		});
 	}
@@ -214,7 +214,7 @@ class JointAccountClient extends BaseClient {
 		let myRPoint = this.getMyRPoint(messageToSign);
 		let encodedRPoint = this.signatureDataCodec.EncodeRPoint(myRPoint);
 
-		this.sessionClient.SendEvent(EventTypes.ProvideRPoint, {
+		this.sessionClient.SendEvent(JointAccountEventTypes.ProvideRPoint, {
 			PubKey: this.signatureDataCodec.EncodePublicKey(this.getMyPublicKey()),
 			MessageToSign: messageToSign,
 			RPoint: encodedRPoint,
@@ -230,7 +230,7 @@ class JointAccountClient extends BaseClient {
 		let signatureContribution = this.getMySignatureContribution(messageToSign);
 		let encodedSignatureContribution = this.signatureDataCodec.EncodeSignatureContribution(signatureContribution);
 
-		this.sessionClient.SendEvent(EventTypes.ProvideSignatureContribution, {
+		this.sessionClient.SendEvent(JointAccountEventTypes.ProvideSignatureContribution, {
 			PubKey: this.signatureDataCodec.EncodePublicKey(this.getMyPublicKey()),
 			MessageToSign: messageToSign,
 			SignatureContribution: encodedSignatureContribution,
@@ -260,7 +260,7 @@ class JointAccountClient extends BaseClient {
 			return;
 		}
 
-		this.sessionClient.SendEvent(EventTypes.RequestForRPoint, {
+		this.sessionClient.SendEvent(JointAccountEventTypes.RequestForRPoint, {
 			MessageToSign: data.Data.MessageToSign,
 			RCommitments: this.getRCommitmentMapEncoded(data.Data.MessageToSign)
 		});
@@ -290,7 +290,7 @@ class JointAccountClient extends BaseClient {
 			return;
 		}
 
-		this.sessionClient.SendEvent(EventTypes.RequestForSignatureContribution, {
+		this.sessionClient.SendEvent(JointAccountEventTypes.RequestForSignatureContribution, {
 			MessageToSign: data.Data.MessageToSign,
 			RPoints: this.getRPointMapEncoded(data.Data.MessageToSign)
 		});

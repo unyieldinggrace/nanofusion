@@ -1,16 +1,18 @@
-import EventTypes from "../EventTypes";
+import JointAccountEventTypes from "../EventTypes/JointAccountEventTypes";
 import BaseClient from "./BaseClient";
 import NanoAmountConverter from "../Cryptography/NanoAmountConverter";
 
-class JointAccountClient extends BaseClient {
-	constructor(sessionClient, accountFinder, nanoNodeClient, blockBuilder, blockSigner, signatureDataCodec) {
+class MixSessionClient extends BaseClient {
+	constructor(sessionClient,
+				transactionTreeBuilder,
+				signatureNegotiator,
+				nanoNodeClient
+	) {
 		super(sessionClient);
 
-		this.accountFinder = accountFinder;
+		this.transactionTreeBuilder = transactionTreeBuilder;
+		this.signatureNegotiator = signatureNegotiator;
 		this.nanoNodeClient = nanoNodeClient;
-		this.blockBuilder = blockBuilder;
-		this.blockSigner = blockSigner;
-		this.signatureDataCodec = signatureDataCodec;
 		this.myPrivateKey = null;
 		this.foreignPubKeys = [];
 		this.foreignRCommitments = {};
@@ -503,4 +505,4 @@ class JointAccountClient extends BaseClient {
 
 }
 
-export default JointAccountClient;
+export default MixSessionClient;
