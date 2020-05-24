@@ -34,7 +34,7 @@ class MixAnnouncePubKeysPhase extends BasePhase {
 		this.foreignPubKeys.push(data.Data.PubKey);
 
 		this.emitStateUpdate({
-			ForeignPubKeys: pubKeys
+			ForeignPubKeys: this.foreignPubKeys
 		});
 	}
 }

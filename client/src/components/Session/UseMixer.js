@@ -17,6 +17,9 @@ class UseMixer extends Component {
 		};
 
 		this.mixSessionClient = this.props.MixSessionClient;
+		this.mixPhaseFactory = this.props.MixPhaseFactory;
+
+		this.phaseTracker = this.mixPhaseFactory.BuildPhaseTracker();
 
 		this.mixSessionClient.OnStateUpdated((state) => {
 			this.setState(state);
