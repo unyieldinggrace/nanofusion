@@ -6,18 +6,14 @@ class UseMixer extends Component {
 	constructor(props) {
 		super(props);
 		this.state = {
-			MyAccountSeed: '',
-			MyNanoAddress: '',
-			JointNanoAddress: null,
-			JointAccountCurrentBalance: null,
-			JointAccountPendingBlocks: null,
-			NumJointAccountContributors: null,
-			ReceivePendingBlocksButtonEnabled: true,
-			SendButtonEnabled: true,
-			BlockData: null,
-			TransactionsWaitingForApproval: [],
-			TransactionsApproved: [],
-			TransactionTree: {'What': 'Transaction Tree'}
+			MyPubKeys: [],
+			ForeignPubKeys: [],
+			MyOutputAccounts: [],
+			ForeignOutputAccounts: [],
+			MyLeafSendBlocks: [],
+			ForeignLeafSendBlocks: [],
+			PubKeyListFinalised: false,
+			TransactionTree: {'What': 'AccountNode Tree'}
 		};
 
 		this.mixSessionClient = this.props.MixSessionClient;
@@ -165,7 +161,7 @@ class UseMixer extends Component {
 					<td>{JSON.stringify(transactionTree)}</td>
 				</tr>
 					{/*{transactionTree.map((transaction) => {*/}
-					{/*	console.log('Transaction:');*/}
+					{/*	console.log('AccountNode:');*/}
 					{/*	console.log(transaction);*/}
 					{/*	let tofrom = (transaction.IsSend ? 'to' : 'from');*/}
 

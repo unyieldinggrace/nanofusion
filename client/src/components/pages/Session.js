@@ -16,7 +16,8 @@ class Session extends Component {
 		let factory = new Factory();
 		this.SessionClient = factory.GetSessionClient();
 		this.JointAccountClient = factory.GetJointAccountClient();
-		this.JointAccountClient = factory.GetMixSessionClient();
+		this.MixSessionClient = factory.GetMixSessionClient();
+		this.MixPhaseFactory = factory.GetMixPhaseFactory();
 	}
 
 	componentDidMount() {
@@ -38,7 +39,14 @@ class Session extends Component {
 		let actionComponent;
 		switch (this.state.ActionComponent) {
 			case 'ChooseSessionAction':
-				actionComponent = (<ChooseSessionAction SessionClient={this.SessionClient} JointAccountClient={this.JointAccountClient} />);
+				actionComponent = (
+					<ChooseSessionAction
+						SessionClient={this.SessionClient}
+						JointAccountClient={this.JointAccountClient}
+						MixSessionClient={this.MixSessionClient}
+						MixPhaseFactory={this.MixPhaseFactory}
+					/>
+				);
 				break;
 			default:
 				break;

@@ -1,6 +1,7 @@
 class PhaseTracker {
 	constructor() {
 		this.phases = [];
+		this.stateUpdateEmittedCallback = null;
 	}
 
 	AddPhase(phase) {
@@ -10,9 +11,20 @@ class PhaseTracker {
 	ExecutePhases() {
 		this.phases.forEach((phase) => {
 			if (phase.IsReady() && !phase.IsComplete()) {
-				phase.OnPhaseCompleted(this.onPhaseCompleted.bind(this));
+				phase.SetPhaseCompletedCallback(this.onPhaseCompleted.bind(this));
+				phase.SetEmitStateUpdateCallback(this.onStateUpdateEmitted.bind(this));
 				phase.Execute();
 			}
+		});
+	}
+
+	SetStateUpdateEmittedCallback(callback) {
+		this.stateUpdateEmittedCallback(callback);
+	}
+
+	NotifyOfUpdatedState(state) {
+		this.phases.forEach((phase) => {
+			phase.NotifyOfUpdatedState(state);
 		});
 	}
 
@@ -20,6 +32,11 @@ class PhaseTracker {
 		this.ExecutePhases();
 	}
 
+	onStateUpdateEmitted(newState) {
+		if (this.stateUpdateEmittedCallback) {
+			this.stateUpdateEmittedCallback(newState);
+		}
+	}
 }
 
 export default PhaseTracker;

@@ -25,6 +25,8 @@ class Factory {
 		this.blockBuilder = null;
 		this.blockSigner = null;
 		this.signatureDataCodec = null;
+		this.mixSessionClient = null;
+		this.mixPhaseFactory = null;
 	}
 
 	getOrCreate(existing, createFunc, allowedModes) {
@@ -101,6 +103,16 @@ class Factory {
 			this.GetBlockBuilder(),
 			this.GetBlockSigner(),
 			this.GetSignatureDataCodec()
+		);
+	}
+
+	GetMixPhaseFactory() {
+		return this.mixPhaseFactory = this.getOrCreate(this.mixPhaseFactory, this.createMixPhaseFactory.bind(this));
+	}
+
+	createMixPhaseFactory() {
+		return new MixPhaseFactory(
+			this.GetSessionClient()
 		);
 	}
 

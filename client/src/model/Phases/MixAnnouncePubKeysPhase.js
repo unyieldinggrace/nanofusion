@@ -2,37 +2,39 @@ import BasePhase from "./BasePhase";
 import MixEventTypes from "../EventTypes/MixEventTypes";
 
 class MixAnnouncePubKeysPhase extends BasePhase {
-	constructor(phaseState, sessionClient) {
-		super(phaseState);
+	constructor(sessionClient) {
+		super();
 		this.sessionClient = sessionClient;
 		this.sessionClient.SubscribeToEvent(MixEventTypes.AnnouncePubKey, this.onPeerAnnouncesPubKey.bind(this));
-		this.isComplete = false;
+		this.foreignPubKeys = [];
+		this.myPubKeys = [];
 	}
 
-	Execute() {
-		this.phaseState.PubKeys.forEach((pubKeyHex) => {
+	executeInternal(state) {
+		this.myPubKeys = state.MyPubKeys;
+
+		state.MyPubKeys.forEach((pubKeyHex) => {
 			this.sessionClient.SendEvent(MixEventTypes.AnnouncePubKey, {
 				PubKey: pubKeyHex
 			});
 		});
-
-		this.signalCompleted();
 	}
 
-	IsComplete() {
-		return this.isComplete;
-	}
-
-	MarkComplete() {
-		this.isComplete = true;
+	async NotifyOfUpdatedState(state) {
+		if (state.PubKeyListFinalised) {
+			this.markPhaseCompleted();
+		}
 	}
 
 	onPeerAnnouncesPubKey(data) {
-		let pubKeys = this.phaseState.PubKeys;
-		pubKeys.push(data.Data.PubKey)
+		if (this.myPubKeys.indexOf(data.Data.PubKey) !== -1) {
+			return;
+		}
 
-		this.updatePhaseState({
-			PubKeys: pubKeys
+		this.foreignPubKeys.push(data.Data.PubKey);
+
+		this.emitStateUpdate({
+			ForeignPubKeys: pubKeys
 		});
 	}
 }

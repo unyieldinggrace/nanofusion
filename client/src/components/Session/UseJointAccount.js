@@ -178,7 +178,7 @@ class UseJointAccount extends Component {
 			<Table striped bordered hover>
 				<tbody>
 					{transactions.map((transaction) => {
-						console.log('Transaction:');
+						console.log('AccountNode:');
 						console.log(transaction);
 						let tofrom = (transaction.IsSend ? 'to' : 'from');
 

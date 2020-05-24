@@ -53,7 +53,7 @@ class ChooseSessionAction extends Component {
 	}
 
 	componentDidMount() {
-		this.props.SessionClient.SubscribeToEvent(EventTypes.ReadyToUseJointAccount, () => {
+		this.props.SessionClient.SubscribeToEvent(JointAccountEventTypes.ReadyToUseJointAccount, () => {
 			this.setState({ShowJointAccountInviteModal: true});
 		});
 	}
@@ -67,7 +67,7 @@ class ChooseSessionAction extends Component {
 			case 'UseJointAccount':
 				return (<UseJointAccount JointAccountClient={this.props.JointAccountClient} FromInvite={this.state.UseJointAccountFromInvite} />);
 			case 'UseMixer':
-				return (<UseMixer MixSessionClient={this.props.MixSessionClient} />);
+				return (<UseMixer MixSessionClient={this.props.MixSessionClient} MixPhaseFactory={this.props.MixPhaseFactory} />);
 			default:
 				break;
 		}
