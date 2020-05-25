@@ -177,8 +177,14 @@ class BlockSigner {
 			'publicKeyBytes': key.pubBytes(),
 			'publicKeyPoint': this.ec.decodePoint(key.pubBytes()),
 			'messagePrefix': key.messagePrefix(),
-			'zValue': this.getZValue(secret, messageToSign)
+			// 'zValue': this.getZValue(secret, messageToSign)
+			'zValue': this.getZValueDeterministic(secret)
 		};
+	}
+
+	getZValueDeterministic(secret) {
+		let zValue =  this.cryptoUtils.ByteArrayToHex(blakejs.blake2b(this.cryptoUtils.HexToByteArray(secret)));
+		return this.cryptoUtils.HexToByteArray(zValue);
 	}
 
 	getZValue(secret, messageToSign) {

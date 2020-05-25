@@ -1,7 +1,9 @@
 class AccountNode {
-	constructor() {
+	constructor(componentPublicKeys) {
 		this.NanoAddress = null;
-		this.ComponentPublicKeys = [];
+		this.componentPublicKeys = componentPublicKeys.filter((publicKey) => {
+			return !!publicKey;
+		});
 
 		this.AccountNodeLeft = null;
 		this.AccountNodeRight = null;
@@ -12,6 +14,10 @@ class AccountNode {
 			RefundRight: [],
 			RefundBoth: [],
 		};
+	}
+
+	GetComponentPublicKeys() {
+		return this.componentPublicKeys;
 	}
 }
 

@@ -2,10 +2,13 @@ import BasePhase from "./BasePhase";
 import MixEventTypes from "../EventTypes/MixEventTypes";
 
 class MixAnnouncePubKeysPhase extends BasePhase {
-	constructor(sessionClient) {
+	constructor(sessionClient, signatureDataCodec) {
 		super();
 		this.sessionClient = sessionClient;
+		this.signatureDataCodec = signatureDataCodec;
+
 		this.sessionClient.SubscribeToEvent(MixEventTypes.AnnouncePubKey, this.onPeerAnnouncesPubKey.bind(this));
+		this.sessionClient.SubscribeToEvent(MixEventTypes.RequestPubKeys, this.onPeerRequestsPubKeys.bind(this));
 		this.foreignPubKeys = [];
 		this.myPubKeys = [];
 	}
@@ -14,11 +17,8 @@ class MixAnnouncePubKeysPhase extends BasePhase {
 		console.log('Mix Phase: Announcing public keys.');
 		this.myPubKeys = state.MyPubKeys;
 
-		state.MyPubKeys.forEach((pubKeyHex) => {
-			this.sessionClient.SendEvent(MixEventTypes.AnnouncePubKey, {
-				PubKey: pubKeyHex
-			});
-		});
+		this.sessionClient.SendEvent(MixEventTypes.RequestPubKeys, {});
+		this.broadcastMyPubKeys();
 	}
 
 	async NotifyOfUpdatedState(state) {
@@ -36,6 +36,20 @@ class MixAnnouncePubKeysPhase extends BasePhase {
 
 		this.emitStateUpdate({
 			ForeignPubKeys: this.foreignPubKeys
+		});
+	}
+
+	onPeerRequestsPubKeys() {
+		this.broadcastMyPubKeys();
+	}
+
+	broadcastMyPubKeys() {
+		this.myPubKeys.forEach((pubKeyPoint) => {
+			console.log('Broadcasting PubKey: '+this.signatureDataCodec.EncodePublicKey(pubKeyPoint));
+
+			this.sessionClient.SendEvent(MixEventTypes.AnnouncePubKey, {
+				PubKey: this.signatureDataCodec.EncodePublicKey(pubKeyPoint)
+			});
 		});
 	}
 }

@@ -17,6 +17,7 @@ class Session extends Component {
 		this.SessionClient = factory.GetSessionClient();
 		this.JointAccountClient = factory.GetJointAccountClient();
 		this.MixPhaseFactory = factory.GetMixPhaseFactory();
+		this.BlockSigner = factory.GetBlockSigner();
 	}
 
 	componentDidMount() {
@@ -42,7 +43,7 @@ class Session extends Component {
 					<ChooseSessionAction
 						SessionClient={this.SessionClient}
 						JointAccountClient={this.JointAccountClient}
-						MixSessionClient={this.MixSessionClient}
+						BlockSigner={this.BlockSigner}
 						MixPhaseFactory={this.MixPhaseFactory}
 					/>
 				);

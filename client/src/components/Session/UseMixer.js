@@ -18,6 +18,7 @@ class UseMixer extends Component {
 		};
 
 		this.mixPhaseFactory = this.props.MixPhaseFactory;
+		this.blockSigner = this.props.BlockSigner;
 
 		this.phaseTracker = this.mixPhaseFactory.BuildPhaseTracker();
 		this.phaseTracker.SetStateUpdateEmittedCallback(this.onStateEmitted.bind(this));
@@ -40,11 +41,9 @@ class UseMixer extends Component {
 	}
 
 	componentDidMount() {
-		// this.mixSessionClient.SetUp();
 	}
 
 	componentWillUnmount() {
-		// this.mixSessionClient.TearDown();
 	}
 
 	onStateEmitted(state) {
@@ -84,6 +83,7 @@ class UseMixer extends Component {
 
 		this.setState({
 			MyPrivateKeys: myPrivateKeys,
+			MyPubKeys: this.getMyPubKeysFromPrivateKeys(myPrivateKeys),
 			MyOutputAccounts: myOutputAccounts
 		}, this.notifyPhaseTracker.bind(this));
 	}
@@ -96,14 +96,21 @@ class UseMixer extends Component {
 		let myOutputAccounts = [
 			{
 				NanoAddress: 'nano_11bibi4za8b15gmrzz877qhcpfadcifka5pbkt46rrdownfse57rkf3r17qi',
-				Amount: '1'
+				Amount: 1
 			}
 		];
 
 		this.setState({
 			MyPrivateKeys: myPrivateKeys,
+			MyPubKeys: this.getMyPubKeysFromPrivateKeys(myPrivateKeys),
 			MyOutputAccounts: myOutputAccounts
 		}, this.notifyPhaseTracker.bind(this));
+	}
+
+	getMyPubKeysFromPrivateKeys(myPrivateKeys) {
+		return myPrivateKeys.map((privateKey) => {
+			return this.blockSigner.GetPublicKeyFromPrivate(privateKey);
+		});
 	}
 
 	onPrivateKeysChanged(e) {
@@ -137,30 +144,10 @@ class UseMixer extends Component {
 	}
 
 	onReadyToMixClicked() {
-		this.phaseTracker.ExecutePhases(this.state);
+		this.setState({
+			PubKeyListFinalised: true
+		}, this.notifyPhaseTracker.bind(this));
 	}
-
-	// async onScanClicked() {
-	// 	await this.jointAccountClient.ScanAddress(this.state.JointNanoAddress);
-	// }
-	//
-	// async onApproveAllTransactionsClicked() {
-	// 	let waiting = this.state.TransactionsWaitingForApproval;
-	// 	let alreadyApproved = this.state.TransactionsApproved;
-	//
-	// 	let hashes = waiting.map((transaction) => {
-	// 		return transaction.Hash;
-	// 	});
-	//
-	// 	let newApproved = alreadyApproved.concat(waiting);
-	//
-	// 	this.setState({
-	// 		TransactionsApproved: newApproved,
-	// 		TransactionsWaitingForApproval: []
-	// 	});
-	//
-	// 	this.jointAccountClient.ApproveTransactions(hashes);
-	// }
 
 	getValueOrUnknown(value, unknownValue) {
 		unknownValue = unknownValue || 'Unknown (click scan when ready)'
@@ -206,6 +193,26 @@ class UseMixer extends Component {
 				</tbody>
 			</Table>
 		);
+	}
+
+	getInputInfoTable() {
+		return (
+			<Table striped bordered hover>
+				<tbody className="MixInputsTableBody">
+				<tr>
+					<td colSpan="2">Mix Inputs</td>
+				</tr>
+				<tr>
+					<td>Mine</td>
+					<td>{this.state.MyPubKeys.length}</td>
+				</tr>
+				<tr>
+					<td>Others</td>
+					<td>{this.state.ForeignPubKeys.length}</td>
+				</tr>
+				</tbody>
+			</Table>
+		)
 	}
 
 	render() {
@@ -278,12 +285,15 @@ class UseMixer extends Component {
 						<Button onClick={this.onTriggerRefundClicked} variant="danger">Trigger Refund</Button>
 					</Col>
 				</Row>
-				<Row style={{marginBottom: '1em'}}>
+				<Row className="InputInfoRow">
+					{this.getInputInfoTable()}
+				</Row>
+				<Row className="ProgressRow">
 					<Col>
 						Progress:
 					</Col>
 				</Row>
-				<Row style={{marginBottom: '1em'}}>
+				<Row className="TransactionTreeRow">
 					{this.getTransactionTree(this.state.TransactionTree)}
 				</Row>
 			</Container>

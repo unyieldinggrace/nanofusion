@@ -3,6 +3,7 @@ export default {
 	AnnouncePubKey: 'AnnouncePubKey',
 	AnnounceOutput: 'AnnounceOutput',
 	AnnounceLeafSendBlock: 'AnnounceLeafSendBlock',
+	RequestPubKeys: 'RequestPubKeys',
 
 	RequestForRCommitment: 'RequestForRCommitment',
 	ProvideRCommitment: 'ProvideRCommitment',

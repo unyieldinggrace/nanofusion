@@ -44,3 +44,15 @@
 .TextWrap {
   text-wrap: normal;
 }
+
+.TransactionTreeRow, .ProgressRow, .InputInfoRow {
+  margin-bottom: 1em
+}
+
+table tbody.MixInputsTableBody td {
+  padding: 0.1rem;
+}
+
+textarea.form-control {
+  font-size: 0.8rem;
+}

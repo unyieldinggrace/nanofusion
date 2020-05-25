@@ -67,7 +67,7 @@ class ChooseSessionAction extends Component {
 			case 'UseJointAccount':
 				return (<UseJointAccount JointAccountClient={this.props.JointAccountClient} FromInvite={this.state.UseJointAccountFromInvite} />);
 			case 'UseMixer':
-				return (<UseMixer MixPhaseFactory={this.props.MixPhaseFactory} />);
+				return (<UseMixer MixPhaseFactory={this.props.MixPhaseFactory} BlockSigner={this.props.BlockSigner}/>);
 			default:
 				break;
 		}

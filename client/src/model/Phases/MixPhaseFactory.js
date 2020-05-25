@@ -4,15 +4,17 @@ import MixAnnounceOutputsPhase from "./MixAnnounceOutputsPhase";
 import MixAnnounceLeafSendBlocksPhase from "./MixAnnounceLeafSendBlocksPhase";
 
 class MixPhaseFactory {
-	constructor(sessionClient) {
+	constructor(sessionClient, signatureDataCodec, blockBuilder) {
 		this.sessionClient = sessionClient;
+		this.signatureDataCodec = signatureDataCodec;
+		this.blockBuilder = blockBuilder;
 	}
 
 	BuildPhaseTracker() {
 		let phaseTracker = new PhaseTracker();
-		let announcePubKeysPhase = new MixAnnouncePubKeysPhase(this.sessionClient);
+		let announcePubKeysPhase = new MixAnnouncePubKeysPhase(this.sessionClient, this.signatureDataCodec);
 
-		let announceLeafSendBlocksPhase = new MixAnnounceLeafSendBlocksPhase(this.sessionClient);
+		let announceLeafSendBlocksPhase = new MixAnnounceLeafSendBlocksPhase(this.sessionClient, this.signatureDataCodec, this.blockBuilder);
 		announceLeafSendBlocksPhase.SetPrerequisitePhases([announcePubKeysPhase]);
 
 		let announceOutputsPhase = new MixAnnounceOutputsPhase(this.sessionClient);

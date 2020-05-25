@@ -2,9 +2,12 @@ import BasePhase from "./BasePhase";
 import MixEventTypes from "../EventTypes/MixEventTypes";
 
 class MixAnnounceLeafSendBlocksPhase extends BasePhase {
-	constructor(sessionClient) {
+	constructor(sessionClient, signatureDataCodec, blockBuilder) {
 		super();
 		this.sessionClient = sessionClient;
+		this.signatureDataCodec = signatureDataCodec;
+		this.blockBuilder = blockBuilder;
+
 		this.sessionClient.SubscribeToEvent(MixEventTypes.AnnounceLeafSendBlock, this.onPeerAnnouncesLeafSendBlock.bind(this));
 		this.myLeafSendBlocks = [];
 		this.foreignLeafSendBlocks = [];
