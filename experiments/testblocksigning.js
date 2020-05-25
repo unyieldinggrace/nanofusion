@@ -179,7 +179,7 @@ let RPoints = [
 let aggregatedRPoint = getAggregatedRPoint(RPoints);
 let signatureContribution1 = getSignatureContribution(aggregatedRPoint, pubKeys, blockHash, playerData1, signatureComponents1);
 let signatureContribution2 = getSignatureContribution(aggregatedRPoint, pubKeys, blockHash, playerData2, signatureComponents2);
-// let signatureContribution3 = getSignatureContribution(aggregatedRPoint, pubKeys, blockHash, playerData3, signatureComponents3);
+// let signatureContribution3 = getSignatureContribution(aggregatedRPoint, inputPubKeys, blockHash, playerData3, signatureComponents3);
 
 let signatureContributions = [
 	signatureContribution1,

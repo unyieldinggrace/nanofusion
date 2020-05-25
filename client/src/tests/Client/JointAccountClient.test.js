@@ -2,7 +2,7 @@ import test from 'ava';
 import JointAccountClient from "../../model/Client/JointAccountClient.js";
 import MockSessionClient from "../Mocks/MockSessionClient.js";
 import MockStandardClass from "../Mocks/MockStandardClass.js";
-import JointAccountEventTypes from "../../model/EventTypes/JointAccountEventTypes";
+import EventTypes from "../../model/EventTypes/JointAccountEventTypes";
 import Factory from "../../model/Factory";
 
 let testForeignPublicKeyHex = '61624309447EC8688F5B1CF5644B63471A3C0A9EF3B8CE9A9A7BBA9211EA51B7'; // real

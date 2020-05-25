@@ -2,22 +2,25 @@ import * as blakejs from 'blakejs';
 import AccountNode from "./AccountNode";
 
 class AccountTree {
-	constructor() {
-		this.pubKeys = null;
+	constructor(signatureDataCodec, blockSigner) {
+		this.signatureDataCodec = signatureDataCodec;
+		this.blockSigner = blockSigner;
+
+		this.inputPubKeys = null;
 		this.MixNode = null;
 		this.LeafNodes = [];
 	}
 
-	SetPubKeys(pubKeys) {
-		this.pubKeys = pubKeys;
+	SetInputPubKeysHex(pubKeys) {
+		this.inputPubKeys = pubKeys;
 		let leftPubKeyOfLeafNode = null;
 		let rightPubKeyOfLeafNode = null;
 
-		for (let i = 0; i < this.pubKeys.length; i++) {
+		for (let i = 0; i < this.inputPubKeys.length; i++) {
 			if (i % 2 === 0) {
-				leftPubKeyOfLeafNode = this.pubKeys[i];
+				leftPubKeyOfLeafNode = this.inputPubKeys[i];
 			} else {
-				rightPubKeyOfLeafNode = this.pubKeys[i];
+				rightPubKeyOfLeafNode = this.inputPubKeys[i];
 				this.LeafNodes.push(this.createAccountNode([leftPubKeyOfLeafNode, rightPubKeyOfLeafNode]));
 				leftPubKeyOfLeafNode = null;
 				rightPubKeyOfLeafNode = null;
@@ -25,24 +28,39 @@ class AccountTree {
 		}
 
 		if (leftPubKeyOfLeafNode) {
-			this.LeafNodes.push(this.createAccountNode(leftPubKeyOfLeafNode));
+			this.LeafNodes.push(this.createAccountNode([leftPubKeyOfLeafNode]));
 		}
 	}
 
-	GetReceivingNanoAccountForPublicKeyHex(publicKeyHex) {
+	GetLeafAccountNodeForPublicKeyHex(publicKeyHex) {
+		let result = null;
 
+		this.LeafNodes.forEach((leafNode) => {
+			if (leafNode.GetComponentPublicKeys().indexOf(publicKeyHex) !== -1) {
+				result = leafNode;
+				return false;
+			}
+		});
+
+		return result;
 	}
 
-	Serialise() {
-
+	serialise() {
+		return '';
 	}
 
 	Digest() {
-		blakejs.blake2b(this.Serialise());
+		blakejs.blake2b(this.serialise());
 	}
 
-	createAccountNode(componentPublicKeys) {
-		return new AccountNode(componentPublicKeys);
+	createAccountNode(componentPublicKeysHex) {
+		let componentPublicKeys = componentPublicKeysHex.map((pubKeyHex) => {
+			return this.signatureDataCodec.DecodePublicKey(pubKeyHex);
+		});
+
+		let aggregatedNanoAddress = this.blockSigner.GetNanoAddressForAggregatedPublicKey(componentPublicKeys);
+
+		return new AccountNode(componentPublicKeysHex, aggregatedNanoAddress);
 	}
 
 }

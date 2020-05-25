@@ -46,7 +46,7 @@ class MixCreateLeafSendBlocksPhase extends BasePhase {
 			accountInfo.frontier,
 			accountInfo.representative,
 			'0',
-			this.accountTree.GetReceivingNanoAccountForPublicKeyHex(publicKeyHex)
+			this.accountTree.GetLeafAccountNodeForPublicKeyHex(publicKeyHex).NanoAddress
 		);
 	}
 
