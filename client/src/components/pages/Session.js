@@ -16,7 +16,6 @@ class Session extends Component {
 		let factory = new Factory();
 		this.SessionClient = factory.GetSessionClient();
 		this.JointAccountClient = factory.GetJointAccountClient();
-		this.MixSessionClient = factory.GetMixSessionClient();
 		this.MixPhaseFactory = factory.GetMixPhaseFactory();
 	}
 

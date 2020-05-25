@@ -3,7 +3,6 @@ import * as blakejs from 'blakejs';
 import config from '../config';
 import CryptoUtils from "./Cryptography/CryptoUtils";
 import JointAccountClient from "./Client/JointAccountClient";
-import MixSessionClient from "./Client/MixSessionClient";
 import AccountFinder from "./Cryptography/AccountFinder";
 import NanoNodeClient from "./NanoNode/NanoNodeClient";
 import BlockBuilder from "./Cryptography/BlockBuilder";
@@ -11,6 +10,7 @@ import BlockSigner from "./Cryptography/BlockSigner";
 import SessionClient from "./SessionClient";
 import WebSocketBuilder from "./WebSocketBuilder";
 import SignatureDataCodec from "./Client/SignatureDataCodec";
+import MixPhaseFactory from "./Phases/MixPhaseFactory";
 
 class Factory {
 	constructor(mode) {
@@ -25,7 +25,6 @@ class Factory {
 		this.blockBuilder = null;
 		this.blockSigner = null;
 		this.signatureDataCodec = null;
-		this.mixSessionClient = null;
 		this.mixPhaseFactory = null;
 	}
 
@@ -85,20 +84,6 @@ class Factory {
 		return new JointAccountClient(
 			this.GetSessionClient(),
 			this.GetAccountFinder(),
-			this.GetNanoNodeClient(),
-			this.GetBlockBuilder(),
-			this.GetBlockSigner(),
-			this.GetSignatureDataCodec()
-		);
-	}
-
-	GetMixSessionClient() {
-		return this.mixSessionClient = this.getOrCreate(this.mixSessionClient, this.createMixSessionClient.bind(this));
-	}
-
-	createMixSessionClient() {
-		return new MixSessionClient(
-			this.GetSessionClient(),
 			this.GetNanoNodeClient(),
 			this.GetBlockBuilder(),
 			this.GetBlockSigner(),

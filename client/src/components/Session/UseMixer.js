@@ -6,6 +6,7 @@ class UseMixer extends Component {
 	constructor(props) {
 		super(props);
 		this.state = {
+			MyPrivateKeys: [],
 			MyPubKeys: [],
 			ForeignPubKeys: [],
 			MyOutputAccounts: [],
@@ -16,21 +17,18 @@ class UseMixer extends Component {
 			TransactionTree: {'What': 'AccountNode Tree'}
 		};
 
-		this.mixSessionClient = this.props.MixSessionClient;
 		this.mixPhaseFactory = this.props.MixPhaseFactory;
 
 		this.phaseTracker = this.mixPhaseFactory.BuildPhaseTracker();
-
-		this.mixSessionClient.OnStateUpdated((state) => {
-			this.setState(state);
-		});
+		this.phaseTracker.SetStateUpdateEmittedCallback(this.onStateEmitted.bind(this));
 
 		this.onDemoData1Clicked = this.onDemoData1Clicked.bind(this);
 		this.onDemoData2Clicked = this.onDemoData2Clicked.bind(this);
-		// this.onReadyClicked = this.onReadyClicked.bind(this);
+		this.onSharePublicKeysClicked = this.onSharePublicKeysClicked.bind(this);
+		this.onReadyToMixClicked = this.onReadyToMixClicked.bind(this);
 		// this.onScanClicked = this.onScanClicked.bind(this);
 		this.onPrivateKeysChanged = this.onPrivateKeysChanged.bind(this);
-		this.onNanoAddressesChanged = this.onNanoAddressesChanged.bind(this);
+		this.onOutputAccountsChanged = this.onOutputAccountsChanged.bind(this);
 		// this.onApproveAllTransactionsClicked = this.onApproveAllTransactionsClicked.bind(this);
 
 		this.nanoAddressStyle = {
@@ -42,11 +40,19 @@ class UseMixer extends Component {
 	}
 
 	componentDidMount() {
-		this.mixSessionClient.SetUp();
+		// this.mixSessionClient.SetUp();
 	}
 
 	componentWillUnmount() {
-		this.mixSessionClient.TearDown();
+		// this.mixSessionClient.TearDown();
+	}
+
+	onStateEmitted(state) {
+		this.setState(state, this.notifyPhaseTracker.bind(this));
+	}
+
+	notifyPhaseTracker() {
+		this.phaseTracker.NotifyOfUpdatedState(this.state)
 	}
 
 	onDemoData1Clicked() {
@@ -55,62 +61,85 @@ class UseMixer extends Component {
 			'4EB76F58195746851E24C10F131D9F1BE5AB433707F57A66609147669688A227',
 			'8494C2401D47BDC7ACA23042C8F201789CDD52CC55A62F0A1F845D6FAE1F834A',
 			'12C5ADDE284816ED73C6791C2E2AA47298B4A6C7228C41421E4CA68E52E2655A'
-		].join('\n');
+		];
 
-		let myNanoAddresses = [
-			'nano_1g1tutsoskbpfz7qhymfpmgteeg7o4n38j3z6j81y9gwg8jx3kcsnx7krhd5',
-			'nano_1ude767onchizwt13eduwndmcaqu8mbqzckze8mqrfpxtqg9hthcyi81ayyt',
-			'nano_1djh7q9ax7br86bob4sysk8jxrxs13ypbhcmjbymsth8yjiabzq36ra4sf5f',
-			'nano_39x954678drj1r6addyej3e6dxt9tud1ck7wmcfc1ch95ydqbdcj68qx6dxk',
-		].join('\n');
+		let myOutputAccounts = [
+			{
+				NanoAddress: 'nano_1g1tutsoskbpfz7qhymfpmgteeg7o4n38j3z6j81y9gwg8jx3kcsnx7krhd5',
+				Amount: 1
+			},
+			{
+				NanoAddress: 'nano_1ude767onchizwt13eduwndmcaqu8mbqzckze8mqrfpxtqg9hthcyi81ayyt',
+				Amount: 2
+			},
+			{
+				NanoAddress: 'nano_1djh7q9ax7br86bob4sysk8jxrxs13ypbhcmjbymsth8yjiabzq36ra4sf5f',
+				Amount: 3
+			},
+			{
+				NanoAddress: 'nano_39x954678drj1r6addyej3e6dxt9tud1ck7wmcfc1ch95ydqbdcj68qx6dxk',
+				Amount: 1
+			},
+		];
 
 		this.setState({
 			MyPrivateKeys: myPrivateKeys,
-			MyNanoAddresses: myNanoAddresses
-		});
-
-		this.mixSessionClient.UpdateInputPrivateKeys(myPrivateKeys);
-		this.mixSessionClient.UpdateOutputNanoAddresses(myNanoAddresses);
+			MyOutputAccounts: myOutputAccounts
+		}, this.notifyPhaseTracker.bind(this));
 	}
 
 	onDemoData2Clicked() {
 		let myPrivateKeys = [
 			'79FF486DADC60D7045CFEB509F9E977CD79D640489F323C07A8ABABF574A2373',
-			'CAB99AD1016BDB11F2E8D0B18AE2BA20F867B0F001472C1EA014A61ED08F2776',
-			'BA72DD56E8C37D6B0F732055A455BE4FB37BD077070204CEE2C08F7317E192A9',
-			'078A837F3618ECC2DB615FE8FF569BE459CBDDDD1C2C4FD899930F1D3D4652F8'
-		].join('\n');
+		];
 
-		let myNanoAddresses = [
-			'nano_11bibi4za8b15gmrzz877qhcpfadcifka5pbkt46rrdownfse57rkf3r17qi',
-			'nano_37n73r4ss11r8kdfy637qjtef3d9pqdc7da8uwh66m1xgjfns6fud7rryf67',
-			'nano_3duzhtkdo4pmrmd8zp4hqb9t36m1d784y138b31y99pxau67nuoyzkuryamo',
-			'nano_1egyrf7t133yayinqsg89j9zrgkqu9yr7qwnejnh6tbgewqyqxff46ammcbj',
-		].join('\n');
+		let myOutputAccounts = [
+			{
+				NanoAddress: 'nano_11bibi4za8b15gmrzz877qhcpfadcifka5pbkt46rrdownfse57rkf3r17qi',
+				Amount: '1'
+			}
+		];
 
 		this.setState({
 			MyPrivateKeys: myPrivateKeys,
-			MyNanoAddresses: myNanoAddresses
-		});
-
-		this.mixSessionClient.UpdateInputPrivateKeys(myPrivateKeys);
-		this.mixSessionClient.UpdateOutputNanoAddresses(myNanoAddresses);
+			MyOutputAccounts: myOutputAccounts
+		}, this.notifyPhaseTracker.bind(this));
 	}
 
 	onPrivateKeysChanged(e) {
-		let privateKeys = e.target.value;
-		this.mixSessionClient.UpdateInputPrivateKeys(privateKeys);
+		let myPrivateKeys = e.target.value.split('\n');
+
+		this.setState({
+			MyPrivateKeys: myPrivateKeys
+		}, this.notifyPhaseTracker.bind(this));
 	}
 
-	onNanoAddressesChanged(e) {
-		let nanoAddresses = e.target.value;
-		this.mixSessionClient.UpdateOutputNanoAddresses(nanoAddresses);
+	onOutputAccountsChanged(e) {
+		let myOutputAccounts = e.target.value.split('\n');
+		let formattedAccounts = myOutputAccounts.map((accountString) => {
+			let parts = accountString.split(',');
+			let nanoAddress = parts[0];
+			let amount = parts[1];
+
+			return {
+				NanoAddress: nanoAddress,
+				Amount: amount
+			};
+		});
+
+		this.setState({
+			MyOutputAccounts: formattedAccounts
+		}, this.notifyPhaseTracker.bind(this));
 	}
 
-	// onReadyClicked() {
-	// 	this.jointAccountClient.SignalReady();
-	// }
-	//
+	onSharePublicKeysClicked() {
+		this.phaseTracker.ExecutePhases(this.state);
+	}
+
+	onReadyToMixClicked() {
+		this.phaseTracker.ExecutePhases(this.state);
+	}
+
 	// async onScanClicked() {
 	// 	await this.jointAccountClient.ScanAddress(this.state.JointNanoAddress);
 	// }
@@ -204,7 +233,7 @@ class UseMixer extends Component {
 									placeholder="Private keys for input accounts (one per line)..."
 									aria-label="Input private keys"
 									onChange={this.onPrivateKeysChanged}
-									value={this.state.MyPrivateKeys}
+									value={this.state.MyPrivateKeys.join('\n')}
 								/>
 							</InputGroup>
 						</Col>
@@ -218,15 +247,17 @@ class UseMixer extends Component {
 								rows="4"
 								placeholder="New accounts (one per line, format: nano_xyz123,amount)..."
 								aria-label="Output Nano addresses"
-								onChange={this.onNanoAddressesChanged}
-								value={this.state.MyNanoAddresses}
+								onChange={this.onOutputAccountsChanged}
+								value={this.state.MyOutputAccounts.map((outputAccount) => {
+									return outputAccount.NanoAddress+','+outputAccount.Amount;
+								}).join('\n')}
 							/>
 						</InputGroup>
 					</Col>
 				</Row>
 				<Row>
 					<Col>
-						<Button onClick={this.onReadyClicked}>Ready</Button>
+						<Button onClick={this.onSharePublicKeysClicked}>Share Public Keys</Button>
 					</Col>
 					<Col>
 						<Button onClick={this.onDemoData1Clicked}>Demo Data 1</Button>

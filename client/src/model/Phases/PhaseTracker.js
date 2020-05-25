@@ -8,18 +8,18 @@ class PhaseTracker {
 		this.phases.push(phase);
 	}
 
-	ExecutePhases() {
+	ExecutePhases(state) {
 		this.phases.forEach((phase) => {
 			if (phase.IsReady() && !phase.IsComplete()) {
 				phase.SetPhaseCompletedCallback(this.onPhaseCompleted.bind(this));
 				phase.SetEmitStateUpdateCallback(this.onStateUpdateEmitted.bind(this));
-				phase.Execute();
+				phase.Execute(state);
 			}
 		});
 	}
 
 	SetStateUpdateEmittedCallback(callback) {
-		this.stateUpdateEmittedCallback(callback);
+		this.stateUpdateEmittedCallback = callback;
 	}
 
 	NotifyOfUpdatedState(state) {

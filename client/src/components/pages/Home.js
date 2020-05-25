@@ -103,7 +103,7 @@ class Home extends Component {
 						</Col>
 					</Row>
 					<Row>
-						<Col style={{marginTop: '1rem', 'font-weight': 'bold'}}>
+						<Col style={{marginTop: '1rem', fontWeight: 'bold'}}>
 							Part 1: Joint Account Demo
 						</Col>
 					</Row>
@@ -113,7 +113,7 @@ class Home extends Component {
 						</Col>
 					</Row>
 					<Row>
-						<Col style={{marginTop: '1rem', 'font-weight': 'bold'}}>
+						<Col style={{marginTop: '1rem', fontWeight: 'bold'}}>
 							Part 2: Trustless Mixing (Video Whitepaper)
 						</Col>
 					</Row>

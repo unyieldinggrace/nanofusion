@@ -11,6 +11,7 @@ class MixAnnouncePubKeysPhase extends BasePhase {
 	}
 
 	executeInternal(state) {
+		console.log('Mix Phase: Announcing public keys.');
 		this.myPubKeys = state.MyPubKeys;
 
 		state.MyPubKeys.forEach((pubKeyHex) => {
