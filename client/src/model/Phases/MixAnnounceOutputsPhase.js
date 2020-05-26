@@ -14,6 +14,7 @@ class MixAnnounceOutputsPhase extends BasePhase {
 	}
 
 	executeInternal(state) {
+		console.log('Mix Phase: Announcing outputs.');
 		this.myOutputAccounts = state.MyOutputAccounts;
 		this.myLeafSendBlocks = state.MyLeafSendBlocks;
 		this.foreignLeafSendBlocks = state.ForeignLeafSendBlocks;

@@ -100,7 +100,8 @@ class Factory {
 			this.GetSessionClient(),
 			this.GetSignatureDataCodec(),
 			this.GetBlockBuilder(),
-			this.GetBlockSigner()
+			this.GetBlockSigner(),
+			this.GetNanoNodeClient()
 		);
 	}
 

@@ -17,6 +17,7 @@ class UseMixer extends Component {
 			AccountTree: null
 		};
 
+		this.sessionClient = this.props.SessionClient;
 		this.mixPhaseFactory = this.props.MixPhaseFactory;
 		this.blockSigner = this.props.BlockSigner;
 
@@ -44,6 +45,7 @@ class UseMixer extends Component {
 	}
 
 	componentWillUnmount() {
+		this.sessionClient.UnsubscribeFromAllEvents();
 	}
 
 	onStateEmitted(state) {
@@ -177,20 +179,41 @@ class UseMixer extends Component {
 			return null;
 		}
 
+		if (!this.state.MyLeafSendBlocks) {
+			return null
+		}
+
 		return (
 			<Table striped bordered hover>
 				<tbody>
 				{/*<tr>*/}
 				{/*	<td>{JSON.stringify(accountTree)}</td>*/}
 				{/*</tr>*/}
+				<tr>
+					{accountTree.LeafNodes.map((accountNode) => {
+						let sendBlockColumns = [];
+						this.state.MyLeafSendBlocks.forEach((leafSendBlock) => {
+							if (leafSendBlock.block.link === accountNode.NanoAddress) {
+								sendBlockColumns.push((
+									<td>
+										{leafSendBlock.block.account}
+									</td>
+								));
+							}
+						});
+
+						return sendBlockColumns.concat();
+					})}
+				</tr>
+				<tr>
 					{accountTree.LeafNodes.map((accountNode) => {
 						return (
-							<tr key={accountNode.GetComponentPublicKeys().join('')}>
-								<td>{accountNode.NanoAddress}</td>
-								<td>{accountNode.GetComponentPublicKeys().join('\n')}</td>
-							</tr>
+								<td key={accountNode.GetComponentPublicKeys().join('\n')} colSpan={accountNode.GetComponentPublicKeys().length}>
+									{accountNode.NanoAddress}<br />
+								</td>
 						);
 					})}
+				</tr>
 				</tbody>
 			</Table>
 		);

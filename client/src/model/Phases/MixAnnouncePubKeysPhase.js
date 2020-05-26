@@ -29,11 +29,18 @@ class MixAnnouncePubKeysPhase extends BasePhase {
 	}
 
 	onPeerAnnouncesPubKey(data) {
-		if (this.myPubKeys.indexOf(data.Data.PubKey) !== -1) {
-			return;
-		}
+		let alreadyKnown = false;
+		this.foreignPubKeys.forEach((foreignPubKey) => {
+			let foreignPubKeyHex = this.signatureDataCodec.EncodePublicKey(foreignPubKey);
+			if (data.Data.PubKey === foreignPubKeyHex) {
+				alreadyKnown = true;
+				return false;
+			}
+		});
 
-		this.foreignPubKeys.push(this.signatureDataCodec.DecodePublicKey(data.Data.PubKey));
+		if (!alreadyKnown) {
+			this.foreignPubKeys.push(this.signatureDataCodec.DecodePublicKey(data.Data.PubKey));
+		}
 
 		this.emitStateUpdate({
 			ForeignPubKeys: this.foreignPubKeys

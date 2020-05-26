@@ -1,5 +1,5 @@
 import BasePhase from "./BasePhase";
-import * as nanocurrency from 'NanoCurrency';
+import * as NanoCurrency from 'nanocurrency';
 
 class MixCreateLeafSendBlocksPhase extends BasePhase {
 	constructor(signatureDataCodec, blockBuilder, blockSigner, nanoNodeClient) {
@@ -9,6 +9,8 @@ class MixCreateLeafSendBlocksPhase extends BasePhase {
 		this.blockBuilder = blockBuilder;
 		this.blockSigner = blockSigner;
 		this.nanoNodeClient = nanoNodeClient;
+
+		this.myLeafSendBlocks = [];
 	}
 
 	async executeInternal(state) {
@@ -30,26 +32,35 @@ class MixCreateLeafSendBlocksPhase extends BasePhase {
 	}
 
 	async buildLeafSendBlocks() {
-		this.myPrivateKeys.forEach((privateKey) => {
-			this.myLeafSendBlocks.push(this.buildLeafSendBlock(privateKey));
+		this.myPrivateKeys.forEach(async (privateKey) => {
+			this.myLeafSendBlocks.push(await this.buildLeafSendBlock(privateKey));
 		});
 	}
 
 	async buildLeafSendBlock(privateKey) {
 		let publicKey = this.blockSigner.GetPublicKeyFromPrivate(privateKey);
 		let publicKeyHex = this.signatureDataCodec.EncodePublicKey(publicKey);
-		let nanoPublicKey = nanocurrency.derivePublicKey(privateKey);
-		let nanoAddress = nanocurrency.deriveAddress(nanoPublicKey, {useNanoPrefix: true});
+		let nanoPublicKey = NanoCurrency.derivePublicKey(privateKey);
+		let nanoAddress = NanoCurrency.deriveAddress(nanoPublicKey, {useNanoPrefix: true});
 
 		let accountInfo = await this.nanoNodeClient.GetAccountInfo(nanoAddress);
+		console.log(accountInfo);
 
-		this.blockBuilder.GetUnsignedSendBlock(
+		return this.blockBuilder.GetUnsignedSendBlock(
 			nanoAddress,
-			accountInfo.frontier,
-			accountInfo.representative,
+			this.getAccountInfoProperty(accountInfo, 'frontier'),
+			this.getAccountInfoProperty(accountInfo, 'representative'),
 			'0',
 			this.accountTree.GetLeafAccountNodeForPublicKeyHex(publicKeyHex).NanoAddress
 		);
+	}
+
+	getAccountInfoProperty(accountInfo, property) {
+		if (accountInfo.error === 'Account not found') {
+			return null;
+		}
+
+		return accountInfo[property];
 	}
 
 }
