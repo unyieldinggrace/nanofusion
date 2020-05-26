@@ -17,6 +17,7 @@ class MixAnnounceLeafSendBlocksPhase extends BasePhase {
 
 	executeInternal(state) {
 		console.log('Mix Phase: Announcing leaf send blocks.');
+		return;
 		this.foreignPubKeys = state.ForeignPubKeys;
 		this.myLeafSendBlocks = state.MyLeafSendBlocks;
 

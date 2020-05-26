@@ -12,6 +12,7 @@ class UseMixer extends Component {
 			MyOutputAccounts: [],
 			ForeignOutputAccounts: [],
 			MyLeafSendBlocks: [],
+			LeafSendBlockAmounts: {},
 			ForeignLeafSendBlocks: [],
 			PubKeyListFinalised: false,
 			AccountTree: null
@@ -193,10 +194,11 @@ class UseMixer extends Component {
 					{accountTree.LeafNodes.map((accountNode) => {
 						let sendBlockColumns = [];
 						this.state.MyLeafSendBlocks.forEach((leafSendBlock) => {
-							if (leafSendBlock.block.link === accountNode.NanoAddress) {
+							if (leafSendBlock.block.link_as_account === accountNode.NanoAddress) {
 								sendBlockColumns.push((
-									<td>
-										{leafSendBlock.block.account}
+									<td key={leafSendBlock.hash}>
+										Account: {leafSendBlock.block.account}<br />
+										Balance: {this.state.LeafSendBlockAmounts[leafSendBlock.hash]}
 									</td>
 								));
 							}

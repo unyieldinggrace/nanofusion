@@ -57,3 +57,7 @@ table tbody.MixInputsTableBody td {
 textarea.form-control {
   font-size: 0.8rem;
 }
+
+.AccountTreeRow table td {
+  word-break: break-word;
+}

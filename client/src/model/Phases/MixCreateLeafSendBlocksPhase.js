@@ -1,5 +1,6 @@
 import BasePhase from "./BasePhase";
 import * as NanoCurrency from 'nanocurrency';
+import NanoAmountConverter from "../Cryptography/NanoAmountConverter";
 
 class MixCreateLeafSendBlocksPhase extends BasePhase {
 	constructor(signatureDataCodec, blockBuilder, blockSigner, nanoNodeClient) {
@@ -11,6 +12,7 @@ class MixCreateLeafSendBlocksPhase extends BasePhase {
 		this.nanoNodeClient = nanoNodeClient;
 
 		this.myLeafSendBlocks = [];
+		this.leafSendBlockAmounts = {};
 	}
 
 	async executeInternal(state) {
@@ -18,10 +20,11 @@ class MixCreateLeafSendBlocksPhase extends BasePhase {
 		this.myPrivateKeys = state.MyPrivateKeys;
 		this.accountTree = state.AccountTree;
 
-		await this.buildLeafSendBlocks();
+		let newState = await this.buildLeafSendBlocks();
 
 		this.emitStateUpdate({
-			MyLeafSendBlocks: this.myLeafSendBlocks
+			MyLeafSendBlocks: this.myLeafSendBlocks,
+			LeafSendBlockAmounts: this.leafSendBlockAmounts
 		});
 	}
 
@@ -32,8 +35,16 @@ class MixCreateLeafSendBlocksPhase extends BasePhase {
 	}
 
 	async buildLeafSendBlocks() {
-		this.myPrivateKeys.forEach(async (privateKey) => {
-			this.myLeafSendBlocks.push(await this.buildLeafSendBlock(privateKey));
+		let blockPromises = [];
+
+		this.myPrivateKeys.forEach((privateKey) => {
+			blockPromises.push(this.buildLeafSendBlock(privateKey));
+		});
+
+		let blocks = await Promise.all(blockPromises);
+
+		blocks.forEach((block) => {
+			this.myLeafSendBlocks.push(block);
 		});
 	}
 
@@ -45,14 +56,19 @@ class MixCreateLeafSendBlocksPhase extends BasePhase {
 
 		let accountInfo = await this.nanoNodeClient.GetAccountInfo(nanoAddress);
 		console.log(accountInfo);
+		console.log('Nano Address for Key: ' + nanoAddress);
 
-		return this.blockBuilder.GetUnsignedSendBlock(
+		let block = this.blockBuilder.GetUnsignedSendBlock(
 			nanoAddress,
 			this.getAccountInfoProperty(accountInfo, 'frontier'),
 			this.getAccountInfoProperty(accountInfo, 'representative'),
 			'0',
 			this.accountTree.GetLeafAccountNodeForPublicKeyHex(publicKeyHex).NanoAddress
 		);
+
+		this.leafSendBlockAmounts[block.hash] = NanoAmountConverter.prototype.ConvertRawAmountToNanoAmount(accountInfo.balance);
+
+		return block;
 	}
 
 	getAccountInfoProperty(accountInfo, property) {
