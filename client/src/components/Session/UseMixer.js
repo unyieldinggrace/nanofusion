@@ -9,13 +9,13 @@ class UseMixer extends Component {
 			MyPrivateKeys: [],
 			MyPubKeys: [],
 			ForeignPubKeys: [],
-			MyOutputAccounts: [],
-			ForeignOutputAccounts: [],
-			MyLeafSendBlocks: [],
-			LeafSendBlockAmounts: {},
-			ForeignLeafSendBlocks: [],
 			PubKeyListFinalised: false,
-			AccountTree: null
+			AccountTree: null,
+			MyLeafSendBlocks: [],
+			ForeignLeafSendBlocks: [],
+			LeafSendBlockAmounts: {},
+			MyOutputAccounts: [],
+			ForeignOutputAccounts: []
 		};
 
 		this.sessionClient = this.props.SessionClient;
