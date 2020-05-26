@@ -4,6 +4,7 @@ import MixEventTypes from "../EventTypes/MixEventTypes";
 class MixAnnounceOutputsPhase extends BasePhase {
 	constructor(sessionClient) {
 		super();
+		this.Name = 'Announce Outputs';
 		this.sessionClient = sessionClient;
 		this.sessionClient.SubscribeToEvent(MixEventTypes.AnnounceOutput, this.onPeerAnnouncesOutput.bind(this));
 		this.myOutputAccounts = null;

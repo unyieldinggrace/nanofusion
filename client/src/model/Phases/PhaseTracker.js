@@ -2,6 +2,7 @@ class PhaseTracker {
 	constructor() {
 		this.phases = [];
 		this.stateUpdateEmittedCallback = null;
+		this.latestState = null;
 	}
 
 	AddPhase(phase) {
@@ -23,13 +24,15 @@ class PhaseTracker {
 	}
 
 	NotifyOfUpdatedState(state) {
+		this.latestState = state;
+
 		this.phases.forEach((phase) => {
 			phase.NotifyOfUpdatedState(state);
 		});
 	}
 
 	onPhaseCompleted() {
-		this.ExecutePhases();
+		this.ExecutePhases(this.latestState);
 	}
 
 	onStateUpdateEmitted(newState) {

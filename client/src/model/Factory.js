@@ -98,7 +98,9 @@ class Factory {
 	createMixPhaseFactory() {
 		return new MixPhaseFactory(
 			this.GetSessionClient(),
-			this.GetSignatureDataCodec()
+			this.GetSignatureDataCodec(),
+			this.GetBlockBuilder(),
+			this.GetBlockSigner()
 		);
 	}
 

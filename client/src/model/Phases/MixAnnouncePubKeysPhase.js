@@ -4,6 +4,7 @@ import MixEventTypes from "../EventTypes/MixEventTypes";
 class MixAnnouncePubKeysPhase extends BasePhase {
 	constructor(sessionClient, signatureDataCodec) {
 		super();
+		this.Name = 'Announce Pub Keys';
 		this.sessionClient = sessionClient;
 		this.signatureDataCodec = signatureDataCodec;
 
@@ -32,7 +33,7 @@ class MixAnnouncePubKeysPhase extends BasePhase {
 			return;
 		}
 
-		this.foreignPubKeys.push(data.Data.PubKey);
+		this.foreignPubKeys.push(this.signatureDataCodec.DecodePublicKey(data.Data.PubKey));
 
 		this.emitStateUpdate({
 			ForeignPubKeys: this.foreignPubKeys

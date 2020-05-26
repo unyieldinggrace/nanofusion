@@ -39,13 +39,14 @@
 
 .ClickableCard {
   cursor: pointer;
+  margin-bottom: 1rem;
 }
 
 .TextWrap {
   text-wrap: normal;
 }
 
-.TransactionTreeRow, .ProgressRow, .InputInfoRow {
+.AccountTreeRow, .ProgressRow, .InputInfoRow {
   margin-bottom: 1em
 }
 

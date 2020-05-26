@@ -4,6 +4,7 @@ import AccountTree from "../MixLogic/AccountTree";
 class MixBuildAccountTreePhase extends BasePhase {
 	constructor(signatureDataCodec, blockSigner) {
 		super();
+		this.Name = 'Build Account Tree';
 		this.signatureDataCodec = signatureDataCodec;
 		this.blockSigner = blockSigner;
 
@@ -19,7 +20,13 @@ class MixBuildAccountTreePhase extends BasePhase {
 		let accountTree = this.buildAccountTree();
 		this.emitStateUpdate({
 			AccountTree: accountTree
-		})
+		});
+	}
+
+	async NotifyOfUpdatedState(state) {
+		if (!!state.AccountTree) {
+			this.markPhaseCompleted();
+		}
 	}
 
 	buildAccountTree() {

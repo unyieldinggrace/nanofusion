@@ -2,6 +2,7 @@ import test from 'ava';
 import MixBuildAccountTreePhase from "../../model/Phases/MixBuildAccountTreePhase";
 import Factory from "../../model/Factory";
 import MockStandardClass from "../Mocks/MockStandardClass";
+import AccountTree from "../../model/MixLogic/AccountTree";
 
 let testAggregatedNanoAddress = 'nano_1cxndmsxfdwy8s18rxxcgcubps4wfa13qrkj7f6ffaxdmb5ntscshi1bhd31';
 
@@ -26,6 +27,21 @@ test('When phase is executed, then AccountTree is emitted.', async t => {
 	});
 
 	t.true(!!receivedAccountTree);
+});
+
+test('When phase is notified of AccountTree in state, then mark completed.', async t => {
+	let phase = getTestObjects();
+
+	let receivedAccountTree = null;
+	phase.SetEmitStateUpdateCallback((state) => {
+		receivedAccountTree = state.AccountTree;
+	});
+
+	phase.NotifyOfUpdatedState({
+		AccountTree: new AccountTree(null, null)
+	});
+
+	t.true(phase.IsComplete());
 });
 
 let signatureDataCodec = null;

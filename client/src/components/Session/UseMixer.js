@@ -14,7 +14,7 @@ class UseMixer extends Component {
 			MyLeafSendBlocks: [],
 			ForeignLeafSendBlocks: [],
 			PubKeyListFinalised: false,
-			TransactionTree: {'What': 'AccountNode Tree'}
+			AccountTree: null
 		};
 
 		this.mixPhaseFactory = this.props.MixPhaseFactory;
@@ -172,24 +172,25 @@ class UseMixer extends Component {
 		);
 	}
 
-	getTransactionTree(transactionTree) {
+	getAccountTree(accountTree) {
+		if (!accountTree || !accountTree.LeafNodes) {
+			return null;
+		}
+
 		return (
 			<Table striped bordered hover>
 				<tbody>
-				<tr>
-					<td>{JSON.stringify(transactionTree)}</td>
-				</tr>
-					{/*{transactionTree.map((transaction) => {*/}
-					{/*	console.log('AccountNode:');*/}
-					{/*	console.log(transaction);*/}
-					{/*	let tofrom = (transaction.IsSend ? 'to' : 'from');*/}
-
-					{/*	return (*/}
-					{/*		<tr key={transaction.Hash}>*/}
-					{/*			<td>{transaction.Amount} {tofrom} {transaction.OtherAccount}</td>*/}
-					{/*		</tr>*/}
-					{/*	);*/}
-					{/*})}*/}
+				{/*<tr>*/}
+				{/*	<td>{JSON.stringify(accountTree)}</td>*/}
+				{/*</tr>*/}
+					{accountTree.LeafNodes.map((accountNode) => {
+						return (
+							<tr key={accountNode.GetComponentPublicKeys().join('')}>
+								<td>{accountNode.NanoAddress}</td>
+								<td>{accountNode.GetComponentPublicKeys().join('\n')}</td>
+							</tr>
+						);
+					})}
 				</tbody>
 			</Table>
 		);
@@ -293,8 +294,8 @@ class UseMixer extends Component {
 						Progress:
 					</Col>
 				</Row>
-				<Row className="TransactionTreeRow">
-					{this.getTransactionTree(this.state.TransactionTree)}
+				<Row className="AccountTreeRow">
+					{this.getAccountTree(this.state.AccountTree)}
 				</Row>
 			</Container>
 		);

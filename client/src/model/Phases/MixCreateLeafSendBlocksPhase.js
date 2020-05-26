@@ -4,6 +4,7 @@ import * as nanocurrency from 'NanoCurrency';
 class MixCreateLeafSendBlocksPhase extends BasePhase {
 	constructor(signatureDataCodec, blockBuilder, blockSigner, nanoNodeClient) {
 		super();
+		this.Name = 'Create Leaf-Send Blocks';
 		this.signatureDataCodec = signatureDataCodec;
 		this.blockBuilder = blockBuilder;
 		this.blockSigner = blockSigner;
@@ -11,6 +12,7 @@ class MixCreateLeafSendBlocksPhase extends BasePhase {
 	}
 
 	async executeInternal(state) {
+		console.log('Mix Phase: Create leaf send blocks.');
 		this.myPrivateKeys = state.MyPrivateKeys;
 		this.accountTree = state.AccountTree;
 
