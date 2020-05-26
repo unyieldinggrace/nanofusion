@@ -192,13 +192,22 @@ class UseMixer extends Component {
 				{/*</tr>*/}
 				<tr>
 					{accountTree.LeafNodes.map((accountNode) => {
+						let allLeafSendBlocks = this.state.MyLeafSendBlocks.concat(this.state.ForeignLeafSendBlocks);
+						allLeafSendBlocks.sort((a, b) => {
+							return a.hash.localeCompare(b.hash);
+						});
+
 						let sendBlockColumns = [];
-						this.state.MyLeafSendBlocks.forEach((leafSendBlock) => {
+
+						allLeafSendBlocks.forEach((leafSendBlock) => {
 							if (leafSendBlock.block.link_as_account === accountNode.NanoAddress) {
+								let nanoAddress = leafSendBlock.block.account;
+								let balance = this.state.LeafSendBlockAmounts[leafSendBlock.hash];
+
 								sendBlockColumns.push((
-									<td key={leafSendBlock.hash}>
-										Account: {leafSendBlock.block.account}<br />
-										Balance: {this.state.LeafSendBlockAmounts[leafSendBlock.hash]}
+									<td key={nanoAddress+balance}>
+										Account: {nanoAddress}<br />
+										Balance: {balance}
 									</td>
 								));
 							}

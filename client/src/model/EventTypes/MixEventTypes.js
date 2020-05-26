@@ -1,9 +1,11 @@
 export default {
 	PeerDisconnected: 'PeerDisconnected',
-	AnnouncePubKey: 'AnnouncePubKey',
-	AnnounceOutput: 'AnnounceOutput',
-	AnnounceLeafSendBlock: 'AnnounceLeafSendBlock',
 	RequestPubKeys: 'RequestPubKeys',
+	AnnouncePubKey: 'AnnouncePubKey',
+	RequestLeafSendBlocks: 'RequestLeafSendBlocks',
+	AnnounceLeafSendBlock: 'AnnounceLeafSendBlock',
+	RequestOutputs: 'RequestOutputs',
+	AnnounceOutput: 'AnnounceOutput',
 
 	RequestForRCommitment: 'RequestForRCommitment',
 	ProvideRCommitment: 'ProvideRCommitment',
