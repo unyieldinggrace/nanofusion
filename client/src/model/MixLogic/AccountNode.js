@@ -1,6 +1,6 @@
 class AccountNode {
-	constructor(componentPublicKeys, nanoAddress) {
-		this.componentPublicKeys = componentPublicKeys;
+	constructor(componentPublicKeysHex, nanoAddress) {
+		this.componentPublicKeysHex = componentPublicKeysHex;
 		this.NanoAddress = nanoAddress;
 
 		this.AccountNodeLeft = null;
@@ -14,8 +14,8 @@ class AccountNode {
 		};
 	}
 
-	GetComponentPublicKeys() {
-		return this.componentPublicKeys;
+	GetComponentPublicKeysHex() {
+		return this.componentPublicKeysHex;
 	}
 }
 

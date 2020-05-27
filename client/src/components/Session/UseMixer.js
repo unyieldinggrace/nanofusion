@@ -68,19 +68,11 @@ class UseMixer extends Component {
 		let myOutputAccounts = [
 			{
 				NanoAddress: 'nano_1g1tutsoskbpfz7qhymfpmgteeg7o4n38j3z6j81y9gwg8jx3kcsnx7krhd5',
-				Amount: 1
+				Amount: 0.4
 			},
 			{
 				NanoAddress: 'nano_1ude767onchizwt13eduwndmcaqu8mbqzckze8mqrfpxtqg9hthcyi81ayyt',
-				Amount: 2
-			},
-			{
-				NanoAddress: 'nano_1djh7q9ax7br86bob4sysk8jxrxs13ypbhcmjbymsth8yjiabzq36ra4sf5f',
-				Amount: 3
-			},
-			{
-				NanoAddress: 'nano_39x954678drj1r6addyej3e6dxt9tud1ck7wmcfc1ch95ydqbdcj68qx6dxk',
-				Amount: 1
+				Amount: 0.3
 			},
 		];
 
@@ -99,7 +91,7 @@ class UseMixer extends Component {
 		let myOutputAccounts = [
 			{
 				NanoAddress: 'nano_11bibi4za8b15gmrzz877qhcpfadcifka5pbkt46rrdownfse57rkf3r17qi',
-				Amount: 1
+				Amount: 0.1
 			}
 		];
 
@@ -219,7 +211,7 @@ class UseMixer extends Component {
 				<tr>
 					{accountTree.LeafNodes.map((accountNode) => {
 						return (
-								<td key={accountNode.GetComponentPublicKeys().join('\n')} colSpan={accountNode.GetComponentPublicKeys().length}>
+								<td key={accountNode.GetComponentPublicKeysHex().join('\n')} colSpan={accountNode.GetComponentPublicKeysHex().length}>
 									{accountNode.NanoAddress}<br />
 								</td>
 						);

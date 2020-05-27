@@ -4,6 +4,7 @@ import MixAnnounceOutputsPhase from "./MixAnnounceOutputsPhase";
 import MixAnnounceLeafSendBlocksPhase from "./MixAnnounceLeafSendBlocksPhase";
 import MixBuildAccountTreePhase from "./MixBuildAccountTreePhase";
 import MixCreateLeafSendBlocksPhase from "./MixCreateLeafSendBlocksPhase";
+import MixBuildTransactionPathsPhase from "./MixBuildTransactionPathsPhase";
 
 class MixPhaseFactory {
 	constructor(sessionClient, signatureDataCodec, blockBuilder, blockSigner, nanoNodeClient) {
@@ -29,6 +30,9 @@ class MixPhaseFactory {
 
 		let announceOutputsPhase = new MixAnnounceOutputsPhase(this.sessionClient);
 		announceOutputsPhase.SetPrerequisitePhases([announceLeafSendBlocksPhase]);
+
+		let buildTransactionPaths = new MixBuildTransactionPathsPhase(this.blockBuilder);
+		buildTransactionPaths.SetPrerequisitePhases([announceOutputsPhase]);
 
 		phaseTracker.AddPhase(announcePubKeysPhase);
 		phaseTracker.AddPhase(buildAccountTreePhase);
