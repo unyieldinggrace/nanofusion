@@ -84,12 +84,52 @@ class AccountTree {
 		return result;
 	}
 
-	serialise() {
-		return '';
+	GetTreeDump() {
+		let addBranchNodes = (parentObject, node) => {
+			parentObject.left = node.AccountNodeLeft ? { node: node.AccountNodeLeft } : null;
+			parentObject.right = node.AccountNodeRight ? { node: node.AccountNodeRight } : null;
+
+			if (parentObject.left) {
+				addBranchNodes(parentObject.left, node.AccountNodeLeft);
+			}
+
+			if (parentObject.right) {
+				addBranchNodes(parentObject.right, node.AccountNodeRight);
+			}
+		};
+
+		let rootNodeObject = {node: this.MixNode};
+		addBranchNodes(rootNodeObject, this.MixNode);
+
+		return rootNodeObject;
+
+		// let serialised = {
+		// 	'node': 1,
+		// 	'left': {
+		// 		'node': 2,
+		// 		'left': {
+		// 			'node': 3
+		// 		},
+		// 		'right': {
+		// 			'node': 4
+		// 		}
+		// 	},
+		// 	'right': {
+		// 		'node': 5,
+		// 		'left': {
+		// 			'node': 6
+		// 		},
+		// 		'right': {
+		// 			'node': 7
+		// 		}
+		// 	}
+		// };
 	}
 
 	Digest() {
-		blakejs.blake2b(this.serialise());
+		let string = JSON.stringify(this.GetTreeDump());
+		let bytes = (new TextEncoder()).encode(string);
+		return blakejs.blake2b(bytes);
 	}
 
 	createLeafAccountNode(componentPublicKeysHex) {

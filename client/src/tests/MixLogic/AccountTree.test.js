@@ -50,9 +50,10 @@ test('When pubkeys are set, and outputs are set, then correct set of nodes is bu
 		}
 	]);
 
-	let actualNanoAddress = accountTree.GetMixNode();
+	console.log('Tree Dump:');
+	console.log(accountTree.GetTreeDump());
 
-	t.is(testAggregatedNanoAddress, actualNanoAddress);
+	t.is(accountTree.Digest(), 'asdf');
 });
 
 let signatureDataCodec = null;
