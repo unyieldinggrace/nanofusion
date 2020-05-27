@@ -7,12 +7,14 @@ class NanoNodeClient {
 	}
 
 	async GetAccountInfo(account) {
-		let response = await axios.post(this.NANO_NODE_ENDPOINT+'/api/v2', {
-			action: "account_info",
-			account: account
-		});
+		return this.getCachedAccountInfo(account);
 
-		return response.data;
+		// let response = await axios.post(this.NANO_NODE_ENDPOINT+'/api/v2', {
+		// 	action: "account_info",
+		// 	account: account
+		// });
+		//
+		// return response.data;
 
 		// .then((response) => {
 		// 	console.log(response);
@@ -121,6 +123,75 @@ class NanoNodeClient {
 		// 	"hash": "E03D646E37DAE61E4D21281054418EF733CCFB9943B424B36B203ED063340A88"
 		// };
 
+	}
+
+	getCachedAccountInfo(account) {
+		switch (account) {
+			case 'nano_1bhjcifu6mpz69a6rx45mc86nibirer8poawh8dq79gnj358maj5z3ae3ipy':
+				return {
+					account_version: "1",
+						balance: "30000000000000000000000000000",
+					block_count: "1",
+					confirmation_height: "1",
+					frontier: "26742E2B88EC16FD5E3937D6074DAB90DBD305894EE60FE08346C39918AB83C4",
+					modified_timestamp: "1590469095",
+					open_block: "26742E2B88EC16FD5E3937D6074DAB90DBD305894EE60FE08346C39918AB83C4",
+					representative_block: "26742E2B88EC16FD5E3937D6074DAB90DBD305894EE60FE08346C39918AB83C4"
+				};
+
+			case 'nano_3rgr1bzxxuup939mf4qb4o6oe85johiymq4oriodowuzdn31tqh91reg77fi':
+				return {
+					account_version: "1",
+						balance: "20000000000000000000000000000",
+					block_count: "1",
+					confirmation_height: "1",
+					frontier: "EFF16DBA32883495728B53F32DF598D4E34E2AA5BABCE689E1805BE694946287",
+					modified_timestamp: "1590469091",
+					open_block: "EFF16DBA32883495728B53F32DF598D4E34E2AA5BABCE689E1805BE694946287",
+					representative_block: "EFF16DBA32883495728B53F32DF598D4E34E2AA5BABCE689E1805BE694946287"
+				};
+
+			case 'nano_14odeip7msw3hfy75dosmfaotzfiqzaxty4gdekk9z7471i8zm6937upwrw6':
+				return {
+					account_version: "1",
+						balance: "10000000000000000000000000000",
+					block_count: "1",
+					confirmation_height: "1",
+					frontier: "824969E861EDBE63CCD7405BFC58AC6AFDEBEF622D3026EBBF14667BD3E50182",
+					modified_timestamp: "1590469100",
+					open_block: "824969E861EDBE63CCD7405BFC58AC6AFDEBEF622D3026EBBF14667BD3E50182",
+					representative_block: "824969E861EDBE63CCD7405BFC58AC6AFDEBEF622D3026EBBF14667BD3E50182"
+				};
+
+			case 'nano_16fz4nztc4wp6ataz9x7fa4xgp1hg49a4ig46xqymmpduqwupj3imy5hhq6c':
+				return {
+					account_version: "1",
+						balance: "10000000000000000000000000000",
+					block_count: "1",
+					confirmation_height: "1",
+					frontier: "C1A70D8F9BC82417D226AB7EEDEDF34C95060A911EB0C99998702D3C434DAED0",
+					modified_timestamp: "1590469070",
+					open_block: "C1A70D8F9BC82417D226AB7EEDEDF34C95060A911EB0C99998702D3C434DAED0",
+					representative_block: "C1A70D8F9BC82417D226AB7EEDEDF34C95060A911EB0C99998702D3C434DAED0",
+				};
+
+			case 'nano_3z1scpktndkphq9h3pewktgwxxxjh9ptqcg9midf4fk9wd8wibtfgir1iuoz':
+				return {
+					account_version: "1",
+						balance: "10000000000000000000000000000",
+					block_count: "1",
+					confirmation_height: "1",
+					frontier: "1619D99ABF370DBBE5B74A62E5357A2541D2874416FAF0813EFE2B5F333BD0C5",
+					modified_timestamp: "1590467815",
+					open_block: "1619D99ABF370DBBE5B74A62E5357A2541D2874416FAF0813EFE2B5F333BD0C5",
+					representative_block: "1619D99ABF370DBBE5B74A62E5357A2541D2874416FAF0813EFE2B5F333BD0C5"
+				};
+
+			default:
+				return {
+					"error": "Account not found"
+				};
+		}
 	}
 }
 

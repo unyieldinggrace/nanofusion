@@ -10,8 +10,6 @@ class MixAnnounceOutputsPhase extends BasePhase {
 		this.sessionClient.SubscribeToEvent(MixEventTypes.RequestOutputs, this.onPeerRequestsOutputs.bind(this));
 		this.myOutputAccounts = null;
 		this.foreignOutputAccounts = [];
-		this.myLeafSendBlocks = null;
-		this.foreignLeafSendBlocks = null;
 
 		this.latestState = {};
 	}
@@ -21,8 +19,6 @@ class MixAnnounceOutputsPhase extends BasePhase {
 		this.latestState = state;
 
 		this.myOutputAccounts = state.MyOutputAccounts;
-		this.myLeafSendBlocks = state.MyLeafSendBlocks;
-		this.foreignLeafSendBlocks = state.ForeignLeafSendBlocks;
 
 		this.sessionClient.SendEvent(MixEventTypes.RequestOutputs, {});
 		this.broadcastMyOutputAccounts();
@@ -78,6 +74,21 @@ class MixAnnounceOutputsPhase extends BasePhase {
 
 	getOutputTotalMatchesInputTotal() {
 		// this bit next!
+		let allLeafSendBlocks = this.latestState.MyLeafSendBlocks.concat(this.latestState.ForeignLeafSendBlocks);
+		let allOutputs = this.latestState.MyOutputAccounts.concat(this.latestState.ForeignOutputAccounts);
+
+		let sumLeafSendBlocks = 0;
+		let sumOutputs = 0;
+
+		allLeafSendBlocks.forEach((leafSendBlock) => {
+			sumLeafSendBlocks += this.latestState.LeafSendBlockAmounts[leafSendBlock.hash];
+		});
+
+		allOutputs.forEach((output) => {
+			sumOutputs += output.Amount;
+		});
+
+		return (sumLeafSendBlocks === sumOutputs);
 	}
 
 }
