@@ -66,7 +66,7 @@ class MixCreateLeafSendBlocksPhase extends BasePhase {
 			this.accountTree.GetLeafAccountNodeForPublicKeyHex(publicKeyHex).NanoAddress
 		);
 
-		this.leafSendBlockAmounts[block.hash] = NanoAmountConverter.prototype.ConvertRawAmountToNanoAmount(accountInfo.balance);
+		this.leafSendBlockAmounts[block.hash] = accountInfo.balance;
 
 		return block;
 	}

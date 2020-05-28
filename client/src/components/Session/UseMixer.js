@@ -68,11 +68,11 @@ class UseMixer extends Component {
 		let myOutputAccounts = [
 			{
 				NanoAddress: 'nano_1g1tutsoskbpfz7qhymfpmgteeg7o4n38j3z6j81y9gwg8jx3kcsnx7krhd5',
-				Amount: 0.4
+				Amount: 0.04
 			},
 			{
 				NanoAddress: 'nano_1ude767onchizwt13eduwndmcaqu8mbqzckze8mqrfpxtqg9hthcyi81ayyt',
-				Amount: 0.3
+				Amount: 0.03
 			},
 		];
 
@@ -91,7 +91,7 @@ class UseMixer extends Component {
 		let myOutputAccounts = [
 			{
 				NanoAddress: 'nano_11bibi4za8b15gmrzz877qhcpfadcifka5pbkt46rrdownfse57rkf3r17qi',
-				Amount: 0.1
+				Amount: 0.01
 			}
 		];
 

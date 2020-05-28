@@ -31,14 +31,15 @@ class MixPhaseFactory {
 		let announceOutputsPhase = new MixAnnounceOutputsPhase(this.sessionClient);
 		announceOutputsPhase.SetPrerequisitePhases([announceLeafSendBlocksPhase]);
 
-		let buildTransactionPaths = new MixBuildTransactionPathsPhase(this.blockBuilder);
-		buildTransactionPaths.SetPrerequisitePhases([announceOutputsPhase]);
+		let buildTransactionPathsPhase = new MixBuildTransactionPathsPhase(this.blockBuilder);
+		buildTransactionPathsPhase.SetPrerequisitePhases([announceOutputsPhase]);
 
 		phaseTracker.AddPhase(announcePubKeysPhase);
 		phaseTracker.AddPhase(buildAccountTreePhase);
 		phaseTracker.AddPhase(createLeafSendBlocksPhase);
 		phaseTracker.AddPhase(announceLeafSendBlocksPhase);
 		phaseTracker.AddPhase(announceOutputsPhase);
+		phaseTracker.AddPhase(buildTransactionPathsPhase);
 
 		return phaseTracker;
 	}

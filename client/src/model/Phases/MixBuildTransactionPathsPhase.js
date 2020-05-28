@@ -8,13 +8,18 @@ class MixBuildTransactionPathsPhase extends BasePhase {
 		this.blockBuilder = blockBuilder;
 
 		this.accountTree = null;
+		this.outputAccounts = null;
 	}
 
 	executeInternal(state) {
 		console.log('Mix Phase: Building transaction paths.');
 		this.accountTree = state.AccountTree;
+		this.outputAccounts = state.OutputAccounts;
 
 		this.buildAccountTreeNodes();
+
+		console.log('Tree Dump:');
+		console.log(this.accountTree.GetTreeDump());
 
 		this.emitStateUpdate({
 			AccountTree: this.accountTree
@@ -22,13 +27,13 @@ class MixBuildTransactionPathsPhase extends BasePhase {
 	}
 
 	async NotifyOfUpdatedState(state) {
-		if (!!state.AccountTree) {
+		if (!!state.AccountTree && !!state.AccountTree.Digest()) {
 			this.markPhaseCompleted();
 		}
 	}
 
 	buildAccountTreeNodes() {
-		this.accountTree.BuildNodes();
+		this.accountTree.SetOutputAccounts(this.outputAccounts);
 	}
 
 }

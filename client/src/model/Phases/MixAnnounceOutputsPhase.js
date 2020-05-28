@@ -1,5 +1,6 @@
 import BasePhase from "./BasePhase";
 import MixEventTypes from "../EventTypes/MixEventTypes";
+import NanoAmountConverter from "../Cryptography/NanoAmountConverter";
 
 class MixAnnounceOutputsPhase extends BasePhase {
 	constructor(sessionClient) {
@@ -45,6 +46,7 @@ class MixAnnounceOutputsPhase extends BasePhase {
 		});
 
 		if (this.getOutputTotalMatchesInputTotal()) {
+			console.log('Announce outputs completed (1).');
 			this.markPhaseCompleted();
 		}
 	}
@@ -53,6 +55,7 @@ class MixAnnounceOutputsPhase extends BasePhase {
 		this.latestState = state;
 
 		if (this.getOutputTotalMatchesInputTotal()) {
+			console.log('Announce outputs completed (2).');
 			this.markPhaseCompleted();
 		}
 	}
@@ -73,20 +76,37 @@ class MixAnnounceOutputsPhase extends BasePhase {
 	}
 
 	getOutputTotalMatchesInputTotal() {
-		// this bit next!
+		if (!this.IsRunning()) {
+			return false;
+		}
+
 		let allLeafSendBlocks = this.latestState.MyLeafSendBlocks.concat(this.latestState.ForeignLeafSendBlocks);
 		let allOutputs = this.latestState.MyOutputAccounts.concat(this.latestState.ForeignOutputAccounts);
 
-		let sumLeafSendBlocks = 0;
-		let sumOutputs = 0;
+		let sumLeafSendBlocks = '0';
+		let sumOutputs = '0';
 
 		allLeafSendBlocks.forEach((leafSendBlock) => {
-			sumLeafSendBlocks += this.latestState.LeafSendBlockAmounts[leafSendBlock.hash];
+			sumLeafSendBlocks = NanoAmountConverter.prototype.AddRawAmounts(
+				sumLeafSendBlocks,
+				this.latestState.LeafSendBlockAmounts[leafSendBlock.hash]
+			);
 		});
 
 		allOutputs.forEach((output) => {
-			sumOutputs += output.Amount;
+			sumOutputs = NanoAmountConverter.prototype.AddRawAmounts(
+				sumOutputs,
+				NanoAmountConverter.prototype.ConvertNanoAmountToRawAmount(output.Amount)
+			);
 		});
+
+		// console.log('Outputs calculation:');
+		// console.log(allLeafSendBlocks);
+		// console.log(sumLeafSendBlocks);
+		// console.log(NanoAmountConverter.prototype.ConvertRawAmountToNanoAmount(sumLeafSendBlocks));
+		// console.log(allOutputs);
+		// console.log(sumOutputs);
+		// console.log(NanoAmountConverter.prototype.ConvertRawAmountToNanoAmount(sumOutputs));
 
 		return (sumLeafSendBlocks === sumOutputs);
 	}

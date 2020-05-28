@@ -44,7 +44,6 @@ class AccountTree {
 		}
 
 		this.MixNode = branchLayerNodes[0];
-		// figure out a way to print this to the console for inspection.
 	}
 
 	addAccountNodeLayer(branchLayerNodes) {
@@ -127,6 +126,10 @@ class AccountTree {
 	}
 
 	Digest() {
+		if (!this.MixNode) {
+			return null;
+		}
+
 		let string = JSON.stringify(this.GetTreeDump());
 		let bytes = (new TextEncoder()).encode(string);
 		return blakejs.blake2b(bytes);
@@ -160,6 +163,8 @@ class AccountTree {
 		if (branchNodes.length === 2) {
 			node.AccountNodeRight = branchNodes[1];
 		}
+
+		return node;
 	}
 
 }
