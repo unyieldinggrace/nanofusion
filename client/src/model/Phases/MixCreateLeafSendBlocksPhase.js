@@ -68,7 +68,7 @@ class MixCreateLeafSendBlocksPhase extends BasePhase {
 			receivingAccountNode.NanoAddress
 		);
 
-		receivingAccountNode.AddIncomingSendBlock(block);
+		receivingAccountNode.AddIncomingLeafSendBlock(block, accountInfo.balance);
 
 		this.leafSendBlockAmounts[block.hash] = accountInfo.balance;
 

@@ -173,7 +173,7 @@ class AccountTree {
 
 	buildTransactionPaths(accountNode, outputAccounts) {
 		if (accountNode.IsLeafNode()) {
-			this.buildTransactionPathsForLeafNode(accountNode);
+			this.buildTransactionPathsForLeafNode(accountNode, outputAccounts);
 			return;
 		}
 
@@ -184,9 +184,14 @@ class AccountTree {
 			}
 
 			if (!branchNode.GetSuccessPathSendBlock(accountNode.NanoAddress)) {
-				this.buildTransactionPaths(accountNode.AccountNodeLeft, [
+				this.buildTransactionPaths(branchNode, [
 					{
 						NanoAddress: accountNode.NanoAddress,
+						//
+						//	TODO: Looks like MixAccountRaw isn't ready to be used at this point. It isn't filled out
+						//	 until later. Probably better to fill it out in an earlier phase. Best guess, after
+						//	 leaf-send blocks are announced.
+						//
 						Amount: NanoAmountConverter.prototype.ConvertRawAmountToNanoAmount(accountNode.MixAmountRaw)
 					}
 				]);
@@ -196,7 +201,7 @@ class AccountTree {
 
 			lastSuccessPathBlock = this.blockBuilder.GetUnsignedReceiveBlock(
 				accountNode.NanoAddress,
-				null, // open block
+				lastSuccessPathBlock ? lastSuccessPathBlock.hash : null,
 				this.blockBuilder.DefaultRepNodeAddress,
 				branchNode.MixAmountRaw,
 				incomingSendBlock.hash
@@ -206,6 +211,10 @@ class AccountTree {
 			accountNode.TransactionPaths.Success.push(lastSuccessPathBlock);
 		});
 
+		this.buildTransactionPathsForOutputs(outputAccounts, lastSuccessPathBlock, accountNode);
+	}
+
+	buildTransactionPathsForOutputs(outputAccounts, lastSuccessPathBlock, accountNode) {
 		let accountBalance = accountNode.MixAmountRaw;
 
 		outputAccounts.forEach((outputAccount) => {
@@ -222,18 +231,24 @@ class AccountTree {
 
 			accountNode.TransactionPaths.Success.push(lastSuccessPathBlock);
 		});
-
-		if (accountNode.AccountNodeLeft) {
-			this.buildTransactionPaths(accountNode.AccountNodeLeft);
-		}
-
-		if (accountNode.AccountNodeRight) {
-			this.buildTransactionPaths(accountNode.AccountNodeRight);
-		}
 	}
 
-	buildTransactionPathsForLeafNode(leafNode) {
+	buildTransactionPathsForLeafNode(accountNode, outputAccounts) {
+		let lastSuccessPathBlock = null;
+		accountNode.IncomingLeafSendBlocks.forEach((leafSendBlock) => {
+			lastSuccessPathBlock = this.blockBuilder.GetUnsignedReceiveBlock(
+				accountNode.NanoAddress,
+				lastSuccessPathBlock ? lastSuccessPathBlock.hash : null,
+				this.blockBuilder.DefaultRepNodeAddress,
+				leafSendBlock.AmountRaw,
+				leafSendBlock.Block.hash
+			);
 
+			accountNode.MixAmountRaw = NanoAmountConverter.prototype.AddRawAmounts(accountNode.MixAmountRaw, leafSendBlock.AmountRaw);
+			accountNode.TransactionPaths.Success.push(lastSuccessPathBlock);
+		});
+
+		this.buildTransactionPathsForOutputs(outputAccounts, lastSuccessPathBlock, accountNode);
 	}
 
 }

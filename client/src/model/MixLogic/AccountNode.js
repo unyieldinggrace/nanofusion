@@ -8,7 +8,7 @@ class AccountNode {
 
 		this.MixAmountRaw = '0';
 
-		this.incomingSendBlocks = [];
+		this.IncomingLeafSendBlocks = [];
 
 		this.TransactionPaths = {
 			Success: [],
@@ -22,8 +22,11 @@ class AccountNode {
 		return this.componentPublicKeysHex;
 	}
 
-	AddIncomingSendBlock(sendBlock) {
-		this.incomingSendBlocks.push(sendBlock);
+	AddIncomingLeafSendBlock(sendBlock, amountRaw) {
+		this.IncomingLeafSendBlocks.push({
+			Block: sendBlock,
+			AmountRaw: amountRaw
+		});
 	}
 
 	IsLeafNode() {
@@ -34,9 +37,11 @@ class AccountNode {
 		let resultBlock = null;
 		this.TransactionPaths.Success.forEach((blockInfo) => {
 			if (blockInfo.block.link_as_account === destinationNanoAddress) {
-				return resultBlock;
+				resultBlock = blockInfo;
 			}
 		});
+
+		return resultBlock;
 	}
 }
 
