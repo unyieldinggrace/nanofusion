@@ -19,7 +19,7 @@ class MixPhaseFactory {
 		let phaseTracker = new PhaseTracker();
 		let announcePubKeysPhase = new MixAnnouncePubKeysPhase(this.sessionClient, this.signatureDataCodec);
 
-		let buildAccountTreePhase = new MixBuildAccountTreePhase(this.signatureDataCodec, this.blockSigner);
+		let buildAccountTreePhase = new MixBuildAccountTreePhase(this.signatureDataCodec, this.blockSigner, this.blockBuilder);
 		buildAccountTreePhase.SetPrerequisitePhases([announcePubKeysPhase]);
 
 		let createLeafSendBlocksPhase = new MixCreateLeafSendBlocksPhase(this.signatureDataCodec, this.blockBuilder, this.blockSigner, this.nanoNodeClient);

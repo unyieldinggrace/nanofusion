@@ -6,6 +6,10 @@ class AccountNode {
 		this.AccountNodeLeft = null;
 		this.AccountNodeRight = null;
 
+		this.MixAmountRaw = '0';
+
+		this.incomingSendBlocks = [];
+
 		this.TransactionPaths = {
 			Success: [],
 			RefundLeft: [],
@@ -16,6 +20,23 @@ class AccountNode {
 
 	GetComponentPublicKeysHex() {
 		return this.componentPublicKeysHex;
+	}
+
+	AddIncomingSendBlock(sendBlock) {
+		this.incomingSendBlocks.push(sendBlock);
+	}
+
+	IsLeafNode() {
+		return (this.AccountNodeLeft === null && this.AccountNodeRight === null);
+	}
+
+	GetSuccessPathSendBlock(destinationNanoAddress) {
+		let resultBlock = null;
+		this.TransactionPaths.Success.forEach((blockInfo) => {
+			if (blockInfo.block.link_as_account === destinationNanoAddress) {
+				return resultBlock;
+			}
+		});
 	}
 }
 

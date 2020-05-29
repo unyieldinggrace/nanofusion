@@ -46,7 +46,6 @@ class MixAnnounceOutputsPhase extends BasePhase {
 		});
 
 		if (this.getOutputTotalMatchesInputTotal()) {
-			console.log('Announce outputs completed (1).');
 			this.markPhaseCompleted();
 		}
 	}
@@ -55,7 +54,6 @@ class MixAnnounceOutputsPhase extends BasePhase {
 		this.latestState = state;
 
 		if (this.getOutputTotalMatchesInputTotal()) {
-			console.log('Announce outputs completed (2).');
 			this.markPhaseCompleted();
 		}
 	}

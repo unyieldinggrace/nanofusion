@@ -2,7 +2,7 @@ import * as NanoCurrency from 'nanocurrency';
 
 class BlockBuilder {
 	constructor() {
-		this.defaultRepNodeAddress = 'nano_3arg3asgtigae3xckabaaewkx3bzsh7nwz7jkmjos79ihyaxwphhm6qgjps4'; // Nano Foundation #1
+		this.DefaultRepNodeAddress = 'nano_3arg3asgtigae3xckabaaewkx3bzsh7nwz7jkmjos79ihyaxwphhm6qgjps4'; // Nano Foundation #1
 		this.tempSecretKey = '0000000000000000000000000000000000000000000000000000000000000002';
 		this.previousBlockHashForOpenBlock = '0000000000000000000000000000000000000000000000000000000000000000';
 	}
@@ -16,7 +16,7 @@ class BlockBuilder {
 	}
 
 	getUnsignedBlock(nanoAddress, previousBlockHash, repNodeAddress, newBalanceAmountInRaw, pendingBlockHash) {
-		repNodeAddress = (repNodeAddress ? repNodeAddress : this.defaultRepNodeAddress)
+		repNodeAddress = (repNodeAddress ? repNodeAddress : this.DefaultRepNodeAddress)
 
 		let hash = this.getBlockHash(nanoAddress, previousBlockHash, repNodeAddress, newBalanceAmountInRaw, pendingBlockHash);
 

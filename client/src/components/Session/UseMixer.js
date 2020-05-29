@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import {Container, Row, Col, InputGroup, Form, Button, ButtonGroup, Alert, Table} from 'react-bootstrap';
 import QRCodeImg from "./QRCodeImg";
+import NanoAmountConverter from "../../model/Cryptography/NanoAmountConverter";
 
 class UseMixer extends Component {
 	constructor(props) {
@@ -194,7 +195,7 @@ class UseMixer extends Component {
 						allLeafSendBlocks.forEach((leafSendBlock) => {
 							if (leafSendBlock.block.link_as_account === accountNode.NanoAddress) {
 								let nanoAddress = leafSendBlock.block.account;
-								let balance = this.state.LeafSendBlockAmounts[leafSendBlock.hash];
+								let balance = NanoAmountConverter.prototype.ConvertRawAmountToNanoAmount(this.state.LeafSendBlockAmounts[leafSendBlock.hash]);
 
 								sendBlockColumns.push((
 									<td key={nanoAddress+balance}>

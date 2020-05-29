@@ -1,10 +1,12 @@
 import * as blakejs from 'blakejs';
 import AccountNode from "./AccountNode";
+import NanoAmountConverter from "../Cryptography/NanoAmountConverter";
 
 class AccountTree {
-	constructor(signatureDataCodec, blockSigner) {
+	constructor(signatureDataCodec, blockSigner, blockBuilder) {
 		this.signatureDataCodec = signatureDataCodec;
 		this.blockSigner = blockSigner;
+		this.blockBuilder = blockBuilder;
 
 		this.inputPubKeys = null;
 		this.MixNode = null;
@@ -44,6 +46,8 @@ class AccountTree {
 		}
 
 		this.MixNode = branchLayerNodes[0];
+
+		this.buildTransactionPaths(this.MixNode, this.OutputAccounts);
 	}
 
 	addAccountNodeLayer(branchLayerNodes) {
@@ -165,6 +169,71 @@ class AccountTree {
 		}
 
 		return node;
+	}
+
+	buildTransactionPaths(accountNode, outputAccounts) {
+		if (accountNode.IsLeafNode()) {
+			this.buildTransactionPathsForLeafNode(accountNode);
+			return;
+		}
+
+		let lastSuccessPathBlock = null;
+		[accountNode.AccountNodeLeft, accountNode.AccountNodeRight].forEach((branchNode) => {
+			if (!branchNode) {
+				return true;
+			}
+
+			if (!branchNode.GetSuccessPathSendBlock(accountNode.NanoAddress)) {
+				this.buildTransactionPaths(accountNode.AccountNodeLeft, [
+					{
+						NanoAddress: accountNode.NanoAddress,
+						Amount: NanoAmountConverter.prototype.ConvertRawAmountToNanoAmount(accountNode.MixAmountRaw)
+					}
+				]);
+			}
+
+			let incomingSendBlock = branchNode.GetSuccessPathSendBlock(accountNode.NanoAddress);
+
+			lastSuccessPathBlock = this.blockBuilder.GetUnsignedReceiveBlock(
+				accountNode.NanoAddress,
+				null, // open block
+				this.blockBuilder.DefaultRepNodeAddress,
+				branchNode.MixAmountRaw,
+				incomingSendBlock.hash
+			);
+
+			accountNode.MixAmountRaw = NanoAmountConverter.prototype.AddRawAmounts(accountNode.MixAmountRaw, branchNode.MixAmountRaw);
+			accountNode.TransactionPaths.Success.push(lastSuccessPathBlock);
+		});
+
+		let accountBalance = accountNode.MixAmountRaw;
+
+		outputAccounts.forEach((outputAccount) => {
+			let sendAmountInRaw = NanoAmountConverter.prototype.ConvertNanoAmountToRawAmount(outputAccount.Amount);
+			accountBalance = NanoAmountConverter.prototype.SubtractSendAmount(accountBalance, sendAmountInRaw);
+
+			lastSuccessPathBlock = this.blockBuilder.GetUnsignedSendBlock(
+				accountNode.NanoAddress,
+				lastSuccessPathBlock.hash,
+				this.blockBuilder.DefaultRepNodeAddress,
+				accountBalance,
+				outputAccount.NanoAddress
+			);
+
+			accountNode.TransactionPaths.Success.push(lastSuccessPathBlock);
+		});
+
+		if (accountNode.AccountNodeLeft) {
+			this.buildTransactionPaths(accountNode.AccountNodeLeft);
+		}
+
+		if (accountNode.AccountNodeRight) {
+			this.buildTransactionPaths(accountNode.AccountNodeRight);
+		}
+	}
+
+	buildTransactionPathsForLeafNode(leafNode) {
+
 	}
 
 }

@@ -67,5 +67,7 @@ let getTestObjects = () => {
 		return testAggregatedNanoAddress;
 	});
 
-	return new AccountTree(signatureDataCodec, mockBlockSigner);
+	let mockBlockBuilder = new MockStandardClass();
+
+	return new AccountTree(signatureDataCodec, mockBlockSigner, mockBlockBuilder);
 }

@@ -58,13 +58,17 @@ class MixCreateLeafSendBlocksPhase extends BasePhase {
 		console.log(accountInfo);
 		console.log('Nano Address for Key: ' + nanoAddress);
 
+		let receivingAccountNode = this.accountTree.GetLeafAccountNodeForPublicKeyHex(publicKeyHex);
+
 		let block = this.blockBuilder.GetUnsignedSendBlock(
 			nanoAddress,
 			this.getAccountInfoProperty(accountInfo, 'frontier'),
 			this.getAccountInfoProperty(accountInfo, 'representative'),
 			'0',
-			this.accountTree.GetLeafAccountNodeForPublicKeyHex(publicKeyHex).NanoAddress
+			receivingAccountNode.NanoAddress
 		);
+
+		receivingAccountNode.AddIncomingSendBlock(block);
 
 		this.leafSendBlockAmounts[block.hash] = accountInfo.balance;
 

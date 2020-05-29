@@ -2,11 +2,12 @@ import BasePhase from "./BasePhase";
 import AccountTree from "../MixLogic/AccountTree";
 
 class MixBuildAccountTreePhase extends BasePhase {
-	constructor(signatureDataCodec, blockSigner) {
+	constructor(signatureDataCodec, blockSigner, blockBuilder) {
 		super();
 		this.Name = 'Build Account Tree';
 		this.signatureDataCodec = signatureDataCodec;
 		this.blockSigner = blockSigner;
+		this.blockBuilder = blockBuilder;
 
 		this.foreignPubKeys = [];
 		this.myPubKeys = [];
@@ -31,7 +32,7 @@ class MixBuildAccountTreePhase extends BasePhase {
 
 	buildAccountTree() {
 		let sortedUniquePubKeys = this.getSortedUniquePubKeys();
-		let accountTree = new AccountTree(this.signatureDataCodec, this.blockSigner);
+		let accountTree = new AccountTree(this.signatureDataCodec, this.blockSigner, this.blockBuilder);
 		accountTree.SetInputPubKeysHex(sortedUniquePubKeys);
 		return accountTree;
 	}

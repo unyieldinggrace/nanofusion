@@ -38,7 +38,7 @@ test('When phase is notified of AccountTree in state, then mark completed.', asy
 	});
 
 	phase.NotifyOfUpdatedState({
-		AccountTree: new AccountTree(null, null)
+		AccountTree: new AccountTree(null, null, null)
 	});
 
 	t.true(phase.IsComplete());
