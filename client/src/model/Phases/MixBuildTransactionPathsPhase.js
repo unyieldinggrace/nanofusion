@@ -1,5 +1,4 @@
 import BasePhase from "./BasePhase";
-import AccountTree from "../MixLogic/AccountTree";
 
 class MixBuildTransactionPathsPhase extends BasePhase {
 	constructor(blockBuilder) {

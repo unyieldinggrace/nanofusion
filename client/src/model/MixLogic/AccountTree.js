@@ -207,6 +207,7 @@ class AccountTree {
 		}
 
 		let lastSuccessPathBlock = null;
+		let accountBalance ='0';
 		[accountNode.AccountNodeLeft, accountNode.AccountNodeRight].forEach((branchNode) => {
 			if (!branchNode) {
 				return true;
@@ -223,15 +224,15 @@ class AccountTree {
 
 			let incomingSendBlock = branchNode.GetSuccessPathSendBlock(accountNode.NanoAddress);
 
+			accountBalance = NanoAmountConverter.prototype.AddRawAmounts(accountBalance, branchNode.MixAmountRaw);
 			lastSuccessPathBlock = this.blockBuilder.GetUnsignedReceiveBlock(
 				accountNode.NanoAddress,
 				lastSuccessPathBlock ? lastSuccessPathBlock.hash : null,
 				this.blockBuilder.DefaultRepNodeAddress,
-				branchNode.MixAmountRaw, // TODO: needs to be cumulative
+				accountBalance,
 				incomingSendBlock.hash
 			);
 
-			// accountNode.MixAmountRaw = NanoAmountConverter.prototype.AddRawAmounts(accountNode.MixAmountRaw, branchNode.MixAmountRaw);
 			accountNode.TransactionPaths.Success.push(lastSuccessPathBlock);
 		});
 
@@ -273,16 +274,19 @@ class AccountTree {
 
 	buildTransactionPathsForLeafNode(accountNode, outputAccounts) {
 		let lastSuccessPathBlock = null;
+		let accountBalance = '0';
+
 		accountNode.IncomingLeafSendBlocks.forEach((leafSendBlock) => {
+			accountBalance = NanoAmountConverter.prototype.AddRawAmounts(accountBalance, leafSendBlock.AmountRaw);
+
 			lastSuccessPathBlock = this.blockBuilder.GetUnsignedReceiveBlock(
 				accountNode.NanoAddress,
 				lastSuccessPathBlock ? lastSuccessPathBlock.hash : null,
 				this.blockBuilder.DefaultRepNodeAddress,
-				leafSendBlock.AmountRaw, // TODO: needs to be cumulative
+				accountBalance,
 				leafSendBlock.Block.hash
 			);
 
-			// accountNode.MixAmountRaw = NanoAmountConverter.prototype.AddRawAmounts(accountNode.MixAmountRaw, leafSendBlock.AmountRaw);
 			accountNode.TransactionPaths.Success.push(lastSuccessPathBlock);
 		});
 

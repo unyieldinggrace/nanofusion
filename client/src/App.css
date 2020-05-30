@@ -61,3 +61,12 @@ textarea.form-control {
 .AccountTreeRow table td {
   word-break: break-word;
 }
+
+.AccountTreeRow table td .NanoCrawlerLink {
+  font-size: 0.8rem;
+}
+
+.MixBinaryTreeTable {
+  margin-bottom: 0;
+  border-bottom: 1rem solid #ccc;
+}

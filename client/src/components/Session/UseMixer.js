@@ -180,7 +180,7 @@ class UseMixer extends Component {
 
 			let nextRow = nodeRow + 1;
 			let colSpan = addNodeCell(accountNode.AccountNodeLeft, nextRow) + addNodeCell(accountNode.AccountNodeRight, nextRow);
-			colSpan = (colSpan === 0) ? 1 : colSpan;
+			colSpan = (colSpan === 0) ? accountNode.IncomingLeafSendBlocks.length : colSpan;
 
 			rows[nodeRow].push({
 				ColSpan: colSpan,
@@ -192,20 +192,26 @@ class UseMixer extends Component {
 		}
 
 		addNodeCell(accountTree.MixNode, 0);
+		let sendBlockColumns = this.getSendBlockColumns(accountTree);
 		rows = rows.reverse();
+		let outputColumns = this.getOutputColumns(accountTree.MixNode)
 
 		return (
-			<Table striped bordered hover>
+			<div>
+			<Table striped bordered hover className="MixBinaryTreeTable">
 				<tbody>
-					{rows.map((row, element, rowIndex) => {
+					<tr>
+						{sendBlockColumns}
+					</tr>
+					{rows.map((row, rowIndex) => {
 						return (<tr key={'TreeRow'+rowIndex}>
 							{
-								row.map((nodeCell, element, nodeIndex) => {
+								row.map((nodeCell, nodeIndex) => {
 									return (
 										<td key={'NodeCell'+rowIndex+'.'+nodeIndex} colSpan={nodeCell.ColSpan}>
 											{this.formatNanoAddress(nodeCell.NanoAddress)}
 											<br />
-											{nodeCell.Amount}
+											Mix amount: {nodeCell.Amount}
 										</td>);
 								})
 							}
@@ -213,7 +219,77 @@ class UseMixer extends Component {
 					})}
 				</tbody>
 			</Table>
+			<Table striped bordered hover>
+				<tbody>
+				<tr>
+					{outputColumns}
+				</tr>
+				</tbody>
+			</Table>
+		</div>
 		);
+	}
+
+	getSendBlockColumns(accountTree) {
+		let sendBlockColumns = [];
+
+		accountTree.LeafNodes.map((accountNode) => {
+			let allLeafSendBlocks = this.state.MyLeafSendBlocks.concat(this.state.ForeignLeafSendBlocks);
+			allLeafSendBlocks.sort((a, b) => {
+				return a.hash.localeCompare(b.hash);
+			});
+
+			allLeafSendBlocks.forEach((leafSendBlock) => {
+				if (leafSendBlock.block.link_as_account === accountNode.NanoAddress) {
+					let nanoAddress = leafSendBlock.block.account;
+					let balance = NanoAmountConverter.prototype.ConvertRawAmountToNanoAmount(this.state.LeafSendBlockAmounts[leafSendBlock.hash]);
+
+					sendBlockColumns.push((
+						<td key={nanoAddress+balance}>
+							Input: {this.formatNanoAddress(nanoAddress)}<br />
+							Balance: {balance}
+						</td>
+					));
+				}
+			});
+		});
+
+		return sendBlockColumns.concat();
+	}
+
+	getOutputColumns(mixNode) {
+		let outputColumns = [];
+		let previousBalance = mixNode.MixAmountRaw;
+
+		mixNode.TransactionPaths.Success.forEach((blockInfo) => {
+			let nanoAddress = blockInfo.block.link_as_account;
+			let isOutputTx = false;
+			let checkMatchesNanoAddress = (outputAccount) => {
+				if (outputAccount.NanoAddress === nanoAddress) {
+					isOutputTx = true;
+					return false;
+				}
+			};
+
+			this.state.MyOutputAccounts.forEach(checkMatchesNanoAddress);
+			this.state.ForeignOutputAccounts.forEach(checkMatchesNanoAddress);
+			if (!isOutputTx) {
+				return true;
+			}
+
+			let newBalance = blockInfo.block.balance;
+			let sendAmount = NanoAmountConverter.prototype.SubtractSendAmount(previousBalance, newBalance);
+			previousBalance = newBalance;
+
+			outputColumns.push((
+				<td key={'Output.'+nanoAddress+sendAmount}>
+					Output: {this.formatNanoAddress(nanoAddress)}<br />
+					Amount: {NanoAmountConverter.prototype.ConvertRawAmountToNanoAmount(sendAmount)}
+				</td>
+			));
+		});
+
+		return outputColumns.concat();
 	}
 
 	getAccountTreePartial(accountTree) {
@@ -221,30 +297,7 @@ class UseMixer extends Component {
 			<Table striped bordered hover>
 				<tbody>
 				<tr>
-					{accountTree.LeafNodes.map((accountNode) => {
-						let allLeafSendBlocks = this.state.MyLeafSendBlocks.concat(this.state.ForeignLeafSendBlocks);
-						allLeafSendBlocks.sort((a, b) => {
-							return a.hash.localeCompare(b.hash);
-						});
-
-						let sendBlockColumns = [];
-
-						allLeafSendBlocks.forEach((leafSendBlock) => {
-							if (leafSendBlock.block.link_as_account === accountNode.NanoAddress) {
-								let nanoAddress = leafSendBlock.block.account;
-								let balance = NanoAmountConverter.prototype.ConvertRawAmountToNanoAmount(this.state.LeafSendBlockAmounts[leafSendBlock.hash]);
-
-								sendBlockColumns.push((
-									<td key={nanoAddress+balance}>
-										Account: {this.formatNanoAddress(nanoAddress)}<br />
-										Balance: {balance}
-									</td>
-								));
-							}
-						});
-
-						return sendBlockColumns.concat();
-					})}
+					{this.getSendBlockColumns(accountTree)}
 				</tr>
 				<tr>
 					{accountTree.LeafNodes.map((accountNode) => {
