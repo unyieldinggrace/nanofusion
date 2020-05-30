@@ -17,7 +17,10 @@ class UseMixer extends Component {
 			LeafSendBlockAmounts: {},
 			MyOutputAccounts: [],
 			ForeignOutputAccounts: [],
-			SignedHashes: {}
+			SignedHashes: {},
+			ForeignRCommitments: {},
+			ForeignRPoints: {},
+			ForeignSignatureContributions: {}
 		};
 
 		this.sessionClient = this.props.SessionClient;

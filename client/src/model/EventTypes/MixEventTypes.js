@@ -9,10 +9,10 @@ export default {
 	AnnounceAccountTreeDigest: 'AnnounceAccountTreeDigest',
 	RequestAccountTreeDigest: 'AnnounceAccountTreeDigest',
 
-	RequestForRCommitment: 'RequestForRCommitment',
-	ProvideRCommitment: 'ProvideRCommitment',
-	RequestForRPoint: 'RequestForRPoint',
-	ProvideRPoint: 'ProvideRPoint',
-	RequestForSignatureContribution: 'RequestForSignatureContribution',
-	ProvideSignatureContribution: 'ProvideSignatureContribution'
+	RequestRCommitments: 'RequestRCommitments',
+	AnnounceRCommitment: 'AnnounceRCommitment',
+	RequestRPoints: 'RequestRPoints',
+	AnnounceRPoint: 'AnnounceRPoint',
+	RequestSignatureContributions: 'RequestSignatureContributions',
+	AnnounceSignatureContribution: 'AnnounceSignatureContribution'
 };
