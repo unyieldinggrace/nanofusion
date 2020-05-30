@@ -40,6 +40,8 @@ class BlockBuilder {
 			? this.previousBlockHashForOpenBlock
 			: previousBlockHash;
 
+		console.log('Getting block hash with balance: '+balanceInRaw);
+
 		return NanoCurrency.hashBlock({
 			account: nanoAddress,
 			previous: previousBlockHash,

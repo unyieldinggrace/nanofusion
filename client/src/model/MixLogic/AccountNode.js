@@ -29,6 +29,11 @@ class AccountNode {
 		});
 	}
 
+	SetMixAmountRaw(mixAmountRaw) {
+		console.log('Setting mix raw amount: '+mixAmountRaw);
+		this.MixAmountRaw = mixAmountRaw;
+	}
+
 	IsLeafNode() {
 		return (this.AccountNodeLeft === null && this.AccountNodeRight === null);
 	}

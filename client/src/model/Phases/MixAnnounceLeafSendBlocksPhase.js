@@ -42,6 +42,10 @@ class MixAnnounceLeafSendBlocksPhase extends BasePhase {
 	}
 
 	onPeerAnnouncesLeafSendBlock(data) {
+		if (!this.IsRunning()) {
+			return;
+		}
+
 		let alreadyKnown = false;
 		this.foreignLeafSendBlocks.forEach((foreignLeafSendBlock) => {
 			let serialisedLocal = JSON.stringify(foreignLeafSendBlock);
@@ -54,6 +58,7 @@ class MixAnnounceLeafSendBlocksPhase extends BasePhase {
 
 		if (!alreadyKnown) {
 			this.foreignLeafSendBlocks.push(data.Data.SendBlock);
+			this.addIncomingSendLeafBlockToAccountNode(data);
 		}
 
 		this.leafSendBlockAmounts[data.Data.SendBlock.hash] = data.Data.Balance;
@@ -62,6 +67,20 @@ class MixAnnounceLeafSendBlocksPhase extends BasePhase {
 			ForeignLeafSendBlocks: this.foreignLeafSendBlocks,
 			LeafSendBlockAmounts: this.leafSendBlockAmounts
 		});
+	}
+
+	addIncomingSendLeafBlockToAccountNode(data) {
+		let accountTree = this.latestState.AccountTree;
+
+		let receivingAccountNode = null;
+		accountTree.LeafNodes.forEach((leafAccountNode) => {
+			if (leafAccountNode.NanoAddress === data.Data.SendBlock.block.link_as_account) {
+				receivingAccountNode = leafAccountNode;
+				return false;
+			}
+		});
+
+		receivingAccountNode.AddIncomingLeafSendBlock(data.Data.SendBlock, data.Data.Balance);
 	}
 
 	onPeerRequestsLeafSendBlocks() {

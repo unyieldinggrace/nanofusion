@@ -47,7 +47,8 @@ class AccountTree {
 
 		this.MixNode = branchLayerNodes[0];
 
-		this.buildTransactionPaths(this.MixNode, this.OutputAccounts);
+		this.calculateMixAmounts(this.MixNode);
+		// this.buildTransactionPaths(this.MixNode, this.OutputAccounts);
 	}
 
 	addAccountNodeLayer(branchLayerNodes) {
@@ -72,6 +73,34 @@ class AccountTree {
 
 		this.NonLeafNodesByLayer.push(nodeLayer);
 		return nodeLayer;
+	}
+
+	calculateMixAmounts(accountNode) {
+		if (accountNode.IsLeafNode()) {
+			return this.getMixAmountFromLeafSendNodes(accountNode);
+		}
+
+		let result = '0';
+		[accountNode.AccountNodeLeft, accountNode.AccountNodeRight].forEach((branchNode) => {
+			if (!branchNode) {
+				return true;
+			}
+
+			result = NanoAmountConverter.prototype.AddRawAmounts(result, this.calculateMixAmounts(branchNode));
+		});
+
+		accountNode.SetMixAmountRaw(result);
+		return result;
+	}
+
+	getMixAmountFromLeafSendNodes(accountNode) {
+		let result = '0';
+		accountNode.IncomingLeafSendBlocks.forEach((leafSendBlock) => {
+			result = NanoAmountConverter.prototype.AddRawAmounts(result, leafSendBlock.AmountRaw);
+		});
+
+		accountNode.SetMixAmountRaw(result);
+		return result;
 	}
 
 	GetLeafAccountNodeForPublicKeyHex(publicKeyHex) {
@@ -187,11 +216,6 @@ class AccountTree {
 				this.buildTransactionPaths(branchNode, [
 					{
 						NanoAddress: accountNode.NanoAddress,
-						//
-						//	TODO: Looks like MixAccountRaw isn't ready to be used at this point. It isn't filled out
-						//	 until later. Probably better to fill it out in an earlier phase. Best guess, after
-						//	 leaf-send blocks are announced.
-						//
 						Amount: NanoAmountConverter.prototype.ConvertRawAmountToNanoAmount(accountNode.MixAmountRaw)
 					}
 				]);
@@ -207,7 +231,7 @@ class AccountTree {
 				incomingSendBlock.hash
 			);
 
-			accountNode.MixAmountRaw = NanoAmountConverter.prototype.AddRawAmounts(accountNode.MixAmountRaw, branchNode.MixAmountRaw);
+			// accountNode.MixAmountRaw = NanoAmountConverter.prototype.AddRawAmounts(accountNode.MixAmountRaw, branchNode.MixAmountRaw);
 			accountNode.TransactionPaths.Success.push(lastSuccessPathBlock);
 		});
 
@@ -244,7 +268,7 @@ class AccountTree {
 				leafSendBlock.Block.hash
 			);
 
-			accountNode.MixAmountRaw = NanoAmountConverter.prototype.AddRawAmounts(accountNode.MixAmountRaw, leafSendBlock.AmountRaw);
+			// accountNode.MixAmountRaw = NanoAmountConverter.prototype.AddRawAmounts(accountNode.MixAmountRaw, leafSendBlock.AmountRaw);
 			accountNode.TransactionPaths.Success.push(lastSuccessPathBlock);
 		});
 
