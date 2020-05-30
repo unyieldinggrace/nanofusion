@@ -150,22 +150,9 @@ class UseMixer extends Component {
 		return (value !== null) ? value : unknownValue;
 	}
 
-	formatPendingBlocks(blocks) {
-		if (!blocks) {
-			return 'Unknown';
-		}
-
-		if (blocks.length === 0) {
-			return 'None';
-		}
-
-		return (
-			<ul>
-				{blocks.map((block) => {
-					return (<li key={block.Hash}>{block.Amount} from {block.SenderAccount}</li>);
-				})}
-			</ul>
-		);
+	formatNanoAddress(nanoAddress) {
+		let text = nanoAddress.substr(0, 9) + '...' + nanoAddress.substr(61, 4);
+		return (<a className="NanoCrawlerLink" href={"https://nanocrawler.cc/explorer/account/"+nanoAddress+"/history"}>{text}</a>)
 	}
 
 	getAccountTree(accountTree) {
@@ -174,15 +161,65 @@ class UseMixer extends Component {
 		}
 
 		if (!this.state.MyLeafSendBlocks) {
-			return null
+			return null;
 		}
+
+		if (!accountTree.MixNode || !accountTree.MixNode.TransactionPaths.Success.length) {
+			return this.getAccountTreePartial(accountTree);
+		}
+
+		let rows = [];
+		let addNodeCell = (accountNode, nodeRow) => {
+			if (!accountNode) {
+				return 0;
+			}
+
+			if (!rows[nodeRow]) {
+				rows[nodeRow] = [];
+			}
+
+			let nextRow = nodeRow + 1;
+			let colSpan = addNodeCell(accountNode.AccountNodeLeft, nextRow) + addNodeCell(accountNode.AccountNodeRight, nextRow);
+			colSpan = (colSpan === 0) ? 1 : colSpan;
+
+			rows[nodeRow].push({
+				ColSpan: colSpan,
+				NanoAddress: accountNode.NanoAddress,
+				Amount: NanoAmountConverter.prototype.ConvertRawAmountToNanoAmount(accountNode.MixAmountRaw)
+			});
+
+			return colSpan;
+		}
+
+		addNodeCell(accountTree.MixNode, 0);
+		rows = rows.reverse();
 
 		return (
 			<Table striped bordered hover>
 				<tbody>
-				{/*<tr>*/}
-				{/*	<td>{JSON.stringify(accountTree)}</td>*/}
-				{/*</tr>*/}
+					{rows.map((row, element, rowIndex) => {
+						return (<tr key={'TreeRow'+rowIndex}>
+							{
+								row.map((nodeCell, element, nodeIndex) => {
+									return (
+										<td key={'NodeCell'+rowIndex+'.'+nodeIndex} colSpan={nodeCell.ColSpan}>
+											{this.formatNanoAddress(nodeCell.NanoAddress)}
+											<br />
+											{nodeCell.Amount}
+										</td>);
+								})
+							}
+						</tr>);
+					})}
+				</tbody>
+			</Table>
+		);
+	}
+
+	getAccountTreePartial(accountTree) {
+		return (
+			<Table striped bordered hover>
+				<tbody>
 				<tr>
 					{accountTree.LeafNodes.map((accountNode) => {
 						let allLeafSendBlocks = this.state.MyLeafSendBlocks.concat(this.state.ForeignLeafSendBlocks);
@@ -199,7 +236,7 @@ class UseMixer extends Component {
 
 								sendBlockColumns.push((
 									<td key={nanoAddress+balance}>
-										Account: {nanoAddress}<br />
+										Account: {this.formatNanoAddress(nanoAddress)}<br />
 										Balance: {balance}
 									</td>
 								));
@@ -212,9 +249,9 @@ class UseMixer extends Component {
 				<tr>
 					{accountTree.LeafNodes.map((accountNode) => {
 						return (
-								<td key={accountNode.GetComponentPublicKeysHex().join('\n')} colSpan={accountNode.GetComponentPublicKeysHex().length}>
-									{accountNode.NanoAddress}<br />
-								</td>
+							<td key={accountNode.GetComponentPublicKeysHex().join('\n')} colSpan={accountNode.GetComponentPublicKeysHex().length}>
+								{this.formatNanoAddress(accountNode.NanoAddress)}<br />
+							</td>
 						);
 					})}
 				</tr>

@@ -48,7 +48,7 @@ class AccountTree {
 		this.MixNode = branchLayerNodes[0];
 
 		this.calculateMixAmounts(this.MixNode);
-		// this.buildTransactionPaths(this.MixNode, this.OutputAccounts);
+		this.buildTransactionPaths(this.MixNode, this.OutputAccounts);
 	}
 
 	addAccountNodeLayer(branchLayerNodes) {
@@ -227,7 +227,7 @@ class AccountTree {
 				accountNode.NanoAddress,
 				lastSuccessPathBlock ? lastSuccessPathBlock.hash : null,
 				this.blockBuilder.DefaultRepNodeAddress,
-				branchNode.MixAmountRaw,
+				branchNode.MixAmountRaw, // TODO: needs to be cumulative
 				incomingSendBlock.hash
 			);
 
@@ -241,20 +241,34 @@ class AccountTree {
 	buildTransactionPathsForOutputs(outputAccounts, lastSuccessPathBlock, accountNode) {
 		let accountBalance = accountNode.MixAmountRaw;
 
-		outputAccounts.forEach((outputAccount) => {
-			let sendAmountInRaw = NanoAmountConverter.prototype.ConvertNanoAmountToRawAmount(outputAccount.Amount);
-			accountBalance = NanoAmountConverter.prototype.SubtractSendAmount(accountBalance, sendAmountInRaw);
-
+		if (outputAccounts.length === 1) {
+			// Intermediate Nodes
 			lastSuccessPathBlock = this.blockBuilder.GetUnsignedSendBlock(
 				accountNode.NanoAddress,
 				lastSuccessPathBlock.hash,
 				this.blockBuilder.DefaultRepNodeAddress,
-				accountBalance,
-				outputAccount.NanoAddress
+				'0',
+				outputAccounts[0].NanoAddress
 			);
 
 			accountNode.TransactionPaths.Success.push(lastSuccessPathBlock);
-		});
+		} else {
+			// Main Mix Node
+			outputAccounts.forEach((outputAccount) => {
+				let sendAmountInRaw = NanoAmountConverter.prototype.ConvertNanoAmountToRawAmount(outputAccount.Amount);
+				accountBalance = NanoAmountConverter.prototype.SubtractSendAmount(accountBalance, sendAmountInRaw);
+
+				lastSuccessPathBlock = this.blockBuilder.GetUnsignedSendBlock(
+					accountNode.NanoAddress,
+					lastSuccessPathBlock.hash,
+					this.blockBuilder.DefaultRepNodeAddress,
+					accountBalance,
+					outputAccount.NanoAddress
+				);
+
+				accountNode.TransactionPaths.Success.push(lastSuccessPathBlock);
+			});
+		}
 	}
 
 	buildTransactionPathsForLeafNode(accountNode, outputAccounts) {
@@ -264,7 +278,7 @@ class AccountTree {
 				accountNode.NanoAddress,
 				lastSuccessPathBlock ? lastSuccessPathBlock.hash : null,
 				this.blockBuilder.DefaultRepNodeAddress,
-				leafSendBlock.AmountRaw,
+				leafSendBlock.AmountRaw, // TODO: needs to be cumulative
 				leafSendBlock.Block.hash
 			);
 

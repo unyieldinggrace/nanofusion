@@ -14,9 +14,12 @@ class MixBuildTransactionPathsPhase extends BasePhase {
 	executeInternal(state) {
 		console.log('Mix Phase: Building transaction paths.');
 		this.accountTree = state.AccountTree;
-		this.outputAccounts = state.OutputAccounts;
+		this.outputAccounts = state.MyOutputAccounts.concat(state.ForeignOutputAccounts);
+		this.outputAccounts.sort((a, b) => {
+			return a.NanoAddress.localeCompare(b.NanoAddress);
+		});
 
-		this.buildAccountTreeNodes();
+		this.accountTree.SetOutputAccounts(this.outputAccounts);
 
 		console.log('Tree Dump:');
 		console.log(this.accountTree.GetTreeDump());
@@ -30,10 +33,6 @@ class MixBuildTransactionPathsPhase extends BasePhase {
 		if (!!state.AccountTree && !!state.AccountTree.Digest()) {
 			this.markPhaseCompleted();
 		}
-	}
-
-	buildAccountTreeNodes() {
-		this.accountTree.SetOutputAccounts(this.outputAccounts);
 	}
 
 }
