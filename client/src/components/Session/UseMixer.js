@@ -16,7 +16,8 @@ class UseMixer extends Component {
 			ForeignLeafSendBlocks: [],
 			LeafSendBlockAmounts: {},
 			MyOutputAccounts: [],
-			ForeignOutputAccounts: []
+			ForeignOutputAccounts: [],
+			SignedHashes: {}
 		};
 
 		this.sessionClient = this.props.SessionClient;
@@ -405,11 +406,6 @@ class UseMixer extends Component {
 				</Row>
 				<Row className="InputInfoRow">
 					{this.getInputInfoTable()}
-				</Row>
-				<Row className="ProgressRow">
-					<Col>
-						Progress:
-					</Col>
 				</Row>
 				<Row className="AccountTreeRow">
 					{this.getAccountTree(this.state.AccountTree)}

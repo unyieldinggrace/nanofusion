@@ -11,6 +11,7 @@ import SessionClient from "./SessionClient";
 import WebSocketBuilder from "./WebSocketBuilder";
 import SignatureDataCodec from "./Client/SignatureDataCodec";
 import MixPhaseFactory from "./Phases/MixPhaseFactory";
+import SignTransactionPhaseFactory from "./Phases/SignTransactionPhaseFactory";
 
 class Factory {
 	constructor(mode) {
@@ -26,6 +27,7 @@ class Factory {
 		this.blockSigner = null;
 		this.signatureDataCodec = null;
 		this.mixPhaseFactory = null;
+		this.signTransactionPhaseFactory = null;
 	}
 
 	getOrCreate(existing, createFunc, allowedModes) {
@@ -101,7 +103,8 @@ class Factory {
 			this.GetSignatureDataCodec(),
 			this.GetBlockBuilder(),
 			this.GetBlockSigner(),
-			this.GetNanoNodeClient()
+			this.GetNanoNodeClient(),
+			this.GetSignTransactionPhaseFactory()
 		);
 	}
 
@@ -159,6 +162,14 @@ class Factory {
 
 	createSignatureDataCodec() {
 		return new SignatureDataCodec(this.GetCryptoUtils(), this.GetEllipticCurveProcessor());
+	}
+
+	GetSignTransactionPhaseFactory() {
+		return this.signTransactionPhaseFactory = this.getOrCreate(this.signTransactionPhaseFactory, this.createSignTransactionPhaseFactory.bind(this));
+	}
+
+	createSignTransactionPhaseFactory() {
+		return new SignTransactionPhaseFactory(this.GetSessionClient(), this.GetSignatureDataCodec(), this.GetBlockSigner());
 	}
 
 }

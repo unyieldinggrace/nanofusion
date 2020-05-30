@@ -6,12 +6,13 @@ export default {
 	AnnounceLeafSendBlock: 'AnnounceLeafSendBlock',
 	RequestOutputs: 'RequestOutputs',
 	AnnounceOutput: 'AnnounceOutput',
+	AnnounceAccountTreeDigest: 'AnnounceAccountTreeDigest',
+	RequestAccountTreeDigest: 'AnnounceAccountTreeDigest',
 
 	RequestForRCommitment: 'RequestForRCommitment',
 	ProvideRCommitment: 'ProvideRCommitment',
 	RequestForRPoint: 'RequestForRPoint',
 	ProvideRPoint: 'ProvideRPoint',
 	RequestForSignatureContribution: 'RequestForSignatureContribution',
-	ProvideSignatureContribution: 'ProvideSignatureContribution',
-	ProposeJointAccountTransaction: 'ProposeJointAccountTransaction'
+	ProvideSignatureContribution: 'ProvideSignatureContribution'
 };
