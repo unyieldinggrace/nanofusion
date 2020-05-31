@@ -14,11 +14,11 @@ class SignTransactionAnnounceSignatureContributionPhase extends BaseSigningPhase
 		this.sessionClient.SubscribeToEvent(MixEventTypes.AnnounceSignatureContribution, this.onPeerAnnouncesSignatureContribution.bind(this));
 		this.sessionClient.SubscribeToEvent(MixEventTypes.RequestSignatureContributions, this.onPeerRequestsSignatureContributions.bind(this));
 
-		this.foreignRPoints = null;
 		this.myPrivateKeys = null;
 		this.myPubKeys = null;
 		this.foreignPubKeys = null;
 		this.jointSignaturesForHashes = null;
+		this.foreignSignatureContributions = null;
 		this.latestState = null;
 	}
 
@@ -42,6 +42,7 @@ class SignTransactionAnnounceSignatureContributionPhase extends BaseSigningPhase
 
 	async NotifyOfUpdatedState(state) {
 		this.latestState = state;
+		this.foreignSignatureContributions = state.ForeignSignatureContributions;
 		this.jointSignaturesForHashes = state.JointSignaturesForHashes;
 
 		if (!this.IsRunning()) {
@@ -131,6 +132,11 @@ class SignTransactionAnnounceSignatureContributionPhase extends BaseSigningPhase
 			return false;
 		}
 
+		// if (this.KNOWN_TRANSACTIONS.indexOf(this.messageToSign) === -1) {
+		// 	console.log('Num contributrions required for '+this.messageToSign+': '+requiredForeignPubKeysHex.length);
+		// 	console.log('Num contributrions found for '+this.messageToSign+': '+numForeignSignatureContributions);
+		// }
+
 		let jointSignature = this.getJointSignature(this.messageToSign);
 
 		let aggregatedPublicKey = this.blockSigner.GetAggregatedPublicKey(this.getAllPubKeys(this.messageToSign));
@@ -171,7 +177,8 @@ class SignTransactionAnnounceSignatureContributionPhase extends BaseSigningPhase
 
 				allSignatureContributions.push({
 					PubKeyHex: key,
-					SignatureContribution: signatureContribution
+					SignatureContribution: signatureContribution,
+					SignatureContributionHex: this.signatureDataCodec.EncodeSignatureContribution(signatureContribution)
 				});
 			});
 		}
@@ -193,13 +200,19 @@ class SignTransactionAnnounceSignatureContributionPhase extends BaseSigningPhase
 
 			allSignatureContributions.push({
 				PubKeyHex: pubKeyHex,
-				SignatureContribution: signatureContribution
+				SignatureContribution: signatureContribution,
+				SignatureContributionHex: this.signatureDataCodec.EncodeSignatureContribution(signatureContribution)
 			});
 		});
 
 		allSignatureContributions.sort((a, b) => {
 			return a.PubKeyHex.localeCompare(b.PubKeyHex);
 		});
+
+		if (this.KNOWN_TRANSACTIONS.indexOf(messageToSign) === -1) {
+			console.log('Signature contributions for "'+messageToSign+'":');
+			console.log(allSignatureContributions);
+		}
 
 		return allSignatureContributions.map((obj) => {
 			return obj.SignatureContribution;
