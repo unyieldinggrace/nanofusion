@@ -13,7 +13,7 @@ class MixSignTransactionsPhase extends BasePhase {
 	executeInternal(state) {
 		this.latestState = state;
 		console.log('Mix Phase: Signing transactions.');
-		let transactionsToInitiate = this.getTransactionsWhereFirstPubKeyOnAccountIsMine(this.latestState.AccountTree.MixNode);
+		let transactionsToInitiate = this.getAllTransactionsInTree(this.latestState.AccountTree.MixNode);
 
 		transactionsToInitiate.forEach((transaction) => {
 			let phaseTracker = this.signTransactionPhaseFactory.BuildPhaseTracker(transaction.hash);
@@ -36,26 +36,26 @@ class MixSignTransactionsPhase extends BasePhase {
 		this.emitStateUpdate(state);
 	}
 
-	getTransactionsWhereFirstPubKeyOnAccountIsMine(accountNode) {
+	getAllTransactionsInTree(accountNode) {
 		if (!accountNode) {
 			return [];
 		}
 
-		let leftTransactions = this.getTransactionsWhereFirstPubKeyOnAccountIsMine(accountNode.AccountNodeLeft);
-		let rightTransactions = this.getTransactionsWhereFirstPubKeyOnAccountIsMine(accountNode.AccountNodeRight);
+		let leftTransactions = this.getAllTransactionsInTree(accountNode.AccountNodeLeft);
+		let rightTransactions = this.getAllTransactionsInTree(accountNode.AccountNodeRight);
 
-		let pubKeysForNode = accountNode.GetComponentPublicKeysHex();
-		pubKeysForNode.sort((a, b) => {
-			return a.localeCompare(b);
-		});
+		// let pubKeysForNode = accountNode.GetComponentPublicKeysHex();
+		// pubKeysForNode.sort((a, b) => {
+		// 	return a.localeCompare(b);
+		// });
 
-		let myPubKeysHex = this.latestState.MyPubKeys.map((pubKey) => {
-			return this.signatureDataCodec.EncodePublicKey(pubKey);
-		});
+		// let myPubKeysHex = this.latestState.MyPubKeys.map((pubKey) => {
+		// 	return this.signatureDataCodec.EncodePublicKey(pubKey);
+		// });
 
-		if (myPubKeysHex.indexOf(pubKeysForNode[0]) === -1) {
-			return leftTransactions.concat(rightTransactions);
-		}
+		// if (myPubKeysHex.indexOf(pubKeysForNode[0]) === -1) {
+		// 	return leftTransactions.concat(rightTransactions);
+		// }
 
 		let selfTransactions = [];
 		Object.keys(accountNode.TransactionPaths).forEach((key) => {

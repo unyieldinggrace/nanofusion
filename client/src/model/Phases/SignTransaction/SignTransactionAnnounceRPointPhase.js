@@ -13,6 +13,7 @@ class SignTransactionAnnounceRPointPhase extends BaseSigningPhase {
 		this.sessionClient.SubscribeToEvent(MixEventTypes.AnnounceRPoint, this.onPeerAnnouncesRPoint.bind(this));
 		this.sessionClient.SubscribeToEvent(MixEventTypes.RequestRPoints, this.onPeerRequestsRPoints.bind(this));
 
+		this.foreignRCommitments = null;
 		this.foreignRPoints = null;
 		this.myPrivateKeys = null;
 		this.myPubKeys = null;
@@ -26,6 +27,7 @@ class SignTransactionAnnounceRPointPhase extends BaseSigningPhase {
 		this.myPrivateKeys = state.MyPrivateKeys;
 		this.myPubKeys = state.MyPubKeys;
 		this.foreignPubKeys = state.ForeignPubKeys;
+		this.foreignRCommitments = state.ForeignRCommitments;
 		this.foreignRPoints = state.ForeignRPoints;
 
 		this.sessionClient.SendEvent(MixEventTypes.RequestRPoints, {});
@@ -34,6 +36,12 @@ class SignTransactionAnnounceRPointPhase extends BaseSigningPhase {
 
 	async NotifyOfUpdatedState(state) {
 		this.latestState = state;
+		this.foreignRPoints = state.ForeignRPoints;
+
+		if (!this.IsRunning()) {
+			return;
+		}
+
 		if (this.getAllRPointsReceivedAndValidated()) {
 			this.markPhaseCompleted();
 		}
@@ -91,12 +99,33 @@ class SignTransactionAnnounceRPointPhase extends BaseSigningPhase {
 	}
 
 	getAllRPointsReceivedAndValidated() {
-		// TODO: validate R Commitments
-		// if (this.getRCommitmentSet(data.Data.MessageToSign).length === this.getPubKeySet().length) {
-		// 	return true;
-		// }
+		let requiredForeignPubKeysHex = this.getRequiredForeignPubKeysHexForTransaction(this.messageToSign);
+		let numForeignRPoints = this.foreignRPoints[this.messageToSign]
+			? Object.keys(this.foreignRPoints[this.messageToSign]).length
+			: 0;
 
-		return false;
+		if (numForeignRPoints !== requiredForeignPubKeysHex.length) {
+			return false;
+		}
+
+		this.checkAllRCommitmentsAreValid(this.messageToSign);
+
+		return true;
+	}
+
+	checkAllRCommitmentsAreValid(messageToSign) {
+		if (!Object.keys(this.foreignRPoints).length || !Object.keys(this.foreignRCommitments).length) {
+			return; // all RPoints are mine
+		}
+
+		Object.keys(this.foreignRCommitments[messageToSign]).forEach((key) => {
+			let RPoint = this.foreignRPoints[messageToSign][key];
+			let RCommitment = this.foreignRCommitments[messageToSign][key];
+
+			if (!this.blockSigner.GetRPointValid(RPoint, RCommitment)) {
+				throw Error('RCommitment does not match RPoint for PubKey: '+key);
+			}
+		});
 	}
 }
 

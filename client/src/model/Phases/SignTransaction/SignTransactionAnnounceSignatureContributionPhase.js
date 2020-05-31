@@ -105,7 +105,11 @@ class SignTransactionAnnounceSignatureContributionPhase extends BaseSigningPhase
 
 	getAllSignatureContributionsReceivedAndJointSignatureValidated() {
 		let requiredForeignPubKeysHex = this.getRequiredForeignPubKeysHexForTransaction(this.messageToSign);
-		if (this.foreignSignatureContributions[this.messageToSign].length !== requiredForeignPubKeysHex.length) {
+		let numForeignSignatureContributions = this.foreignSignatureContributions[this.messageToSign]
+			? Object.keys(this.foreignSignatureContributions[this.messageToSign]).length
+			: 0;
+
+		if (numForeignSignatureContributions !== requiredForeignPubKeysHex.length) {
 			return false;
 		}
 
@@ -117,7 +121,6 @@ class SignTransactionAnnounceSignatureContributionPhase extends BaseSigningPhase
 
 	getJointSignature(messageToSign) {
 		return this.blockSigner.SignMessageMultiple(
-			messageToSign,
 			this.getAllSignatureContributions(messageToSign),
 			this.getAllRPoints(messageToSign)
 		);
@@ -125,25 +128,33 @@ class SignTransactionAnnounceSignatureContributionPhase extends BaseSigningPhase
 
 	getAllSignatureContributions(messageToSign) {
 		let allSignatureContributions = [];
-		Object.keys(this.latestState.ForeignSignatureContributions[messageToSign]).forEach((key) => {
-			let signatureContribution = this.latestState.ForeignSignatureContributions[messageToSign][key];
+		let requiredPubKeysHex = this.getAllPubKeysHex(messageToSign);
 
-			allSignatureContributions.push({
-				PubKeyHex: key,
-				SignatureContribution: signatureContribution
+		if (this.latestState.ForeignSignatureContributions[messageToSign]) {
+			Object.keys(this.latestState.ForeignSignatureContributions[messageToSign]).forEach((key) => {
+				let signatureContribution = this.latestState.ForeignSignatureContributions[messageToSign][key];
+
+				allSignatureContributions.push({
+					PubKeyHex: key,
+					SignatureContribution: signatureContribution
+				});
 			});
-		});
+		}
 
 		this.myPrivateKeys.forEach((privateKey) => {
+			let pubKey = this.blockSigner.GetPublicKeyFromPrivate(privateKey);
+			let pubKeyHex = this.signatureDataCodec.EncodePublicKey(pubKey);
+
+			if (requiredPubKeysHex.indexOf(pubKeyHex) === -1) {
+				return true;
+			}
+
 			let signatureContribution = this.blockSigner.GetSignatureContribution(
 				privateKey,
 				messageToSign,
 				this.getAllPubKeys(messageToSign),
 				this.getAllRPoints(messageToSign)
 			);
-
-			let pubKey = this.blockSigner.GetPublicKeyFromPrivate(privateKey);
-			let pubKeyHex = this.signatureDataCodec.EncodePublicKey(pubKey);
 
 			allSignatureContributions.push({
 				PubKeyHex: pubKeyHex,
@@ -162,16 +173,24 @@ class SignTransactionAnnounceSignatureContributionPhase extends BaseSigningPhase
 
 	getAllRPoints(messageToSign) {
 		let allRPoints = [];
-		Object.keys(this.latestState.ForeignRPoints[messageToSign]).forEach((key) => {
-			allRPoints.push({
-				PubKeyHex: key,
-				RPoint: this.latestState.ForeignRPoints[messageToSign][key]
+		let requiredPubKeysHex = this.getAllPubKeysHex(messageToSign);
+
+		if (this.latestState.ForeignRPoints[messageToSign]) {
+			Object.keys(this.latestState.ForeignRPoints[messageToSign]).forEach((key) => {
+				allRPoints.push({
+					PubKeyHex: key,
+					RPoint: this.latestState.ForeignRPoints[messageToSign][key]
+				});
 			});
-		});
+		}
 
 		this.myPrivateKeys.forEach((privateKey) => {
 			let pubKey = this.blockSigner.GetPublicKeyFromPrivate(privateKey);
 			let pubKeyHex = this.signatureDataCodec.EncodePublicKey(pubKey);
+
+			if (requiredPubKeysHex.indexOf(pubKeyHex) === -1) {
+				return true;
+			}
 
 			allRPoints.push({
 				PubKeyHex: pubKeyHex,
@@ -189,9 +208,13 @@ class SignTransactionAnnounceSignatureContributionPhase extends BaseSigningPhase
 	}
 
 	getAllPubKeys(messageToSign) {
-		return this.latestState.AccountTree.GetPubKeysHexForTransactionHash(messageToSign).map((pubKeyHex) => {
+		return this.getAllPubKeysHex(messageToSign).map((pubKeyHex) => {
 			return this.signatureDataCodec.DecodePublicKey(pubKeyHex);
 		});
+	}
+
+	getAllPubKeysHex(messageToSign) {
+		return this.latestState.AccountTree.GetPubKeysHexForTransactionHash(messageToSign);
 	}
 }
 

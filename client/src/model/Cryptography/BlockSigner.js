@@ -157,6 +157,13 @@ class BlockSigner {
 		return point1Hex.localeCompare(point2Hex);
 	}
 
+	GetRPointValid(RPoint, RCommitment) {
+		let RPointEncoded = this.ec.encodePoint(RPoint);
+		let digest = this.ec.hashInt(RPointEncoded);
+
+		return (digest.eq(RCommitment));
+	}
+
 	getAHashSignatureComponent(playerPublicKeyPoint, pubKeys) {
 		let hashArguments = [this.ec.encodePoint(playerPublicKeyPoint)];
 		// console.log('Hash Arguments: ' + hashArguments);

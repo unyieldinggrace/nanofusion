@@ -34,6 +34,11 @@ class SignTransactionAnnounceRCommitmentPhase extends BaseSigningPhase {
 
 	async NotifyOfUpdatedState(state) {
 		this.latestState = state;
+
+		if (!this.IsRunning()) {
+			return;
+		}
+
 		if (this.getAllRCommitmentsReceived()) {
 			this.markPhaseCompleted();
 		}
