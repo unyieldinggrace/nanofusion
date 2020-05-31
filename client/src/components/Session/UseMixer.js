@@ -20,7 +20,8 @@ class UseMixer extends Component {
 			SignedHashes: {},
 			ForeignRCommitments: {},
 			ForeignRPoints: {},
-			ForeignSignatureContributions: {}
+			ForeignSignatureContributions: {},
+			JointSignaturesForHashes: {}
 		};
 
 		this.sessionClient = this.props.SessionClient;

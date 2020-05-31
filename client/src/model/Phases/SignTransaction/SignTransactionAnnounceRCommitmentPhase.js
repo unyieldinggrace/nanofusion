@@ -1,7 +1,7 @@
-import BasePhase from "./BaseSigningPhase";
 import MixEventTypes from "../../EventTypes/MixEventTypes";
+import BaseSigningPhase from "./BaseSigningPhase";
 
-class SignTransactionAnnounceRCommitmentPhase extends BasePhase {
+class SignTransactionAnnounceRCommitmentPhase extends BaseSigningPhase {
 	constructor(sessionClient, signatureDataCodec, blockSigner, messageToSign) {
 		super();
 		this.Name = 'Announce RCommitments';
@@ -22,7 +22,7 @@ class SignTransactionAnnounceRCommitmentPhase extends BasePhase {
 
 	executeInternal(state) {
 		this.latestState = state;
-		console.log('Signing Phase: Announcing R Commitment.');
+		console.log('Signing Phase: Announcing R Commitments.');
 		this.myPrivateKeys = state.MyPrivateKeys;
 		this.myPubKeys = state.MyPubKeys;
 		this.foreignPubKeys = state.ForeignPubKeys;
@@ -41,6 +41,7 @@ class SignTransactionAnnounceRCommitmentPhase extends BasePhase {
 
 	onPeerAnnouncesRCommitment(data) {
 		this.checkIncomingMessageIsValid(data, 'RCommitment');
+		this.checkAccountTreeDigest(data.Data.AccountTreeDigest);
 
 		let decodedRCommitment = this.signatureDataCodec.DecodeRCommitment(data.Data.RCommitment);
 		let currentRCommitment = this.foreignRCommitments[data.Data.MessageToSign][data.Data.PubKey];
@@ -70,23 +71,30 @@ class SignTransactionAnnounceRCommitmentPhase extends BasePhase {
 
 			let pubKeyPoint = this.blockSigner.GetPublicKeyFromPrivate(privateKey);
 			let RCommitment = this.blockSigner.GetRCommitment(privateKey, this.messageToSign);
+			let RCommitmentEncoded = this.signatureDataCodec.EncodeRCommitment(RCommitment);
 
 			this.sessionClient.SendEvent(MixEventTypes.AnnounceRCommitment, {
 				PubKey: this.signatureDataCodec.EncodePublicKey(pubKeyPoint),
+				MessageToSign: this.messageToSign,
 				AccountTreeDigest: this.latestState.AccountTree.Digest(),
-				RCommitment: RCommitment,
-				Signature: this.blockSigner.SignMessageSingle(RCommitment, privateKey)
+				RCommitment: RCommitmentEncoded,
+				Signature: this.blockSigner.SignMessageSingle(RCommitmentEncoded, privateKey)
 			});
 		});
 	}
 
 	getAllRCommitmentsReceived() {
-		// if (this.getRCommitmentSet(data.Data.MessageToSign).length === this.getPubKeySet().length) {
-		// 	return true;
-		// }
-
-		return false;
+		let requiredForeignPubKeysHex = this.getRequiredForeignPubKeysHexForTransaction(this.messageToSign);
+		return (this.foreignRCommitments[this.messageToSign].length === requiredForeignPubKeysHex.length);
 	}
+
+	checkAccountTreeDigest(foreignAccountTreeDigest) {
+		let localAccountTreeDigest = this.latestState.AccountTree.Digest();
+		if (foreignAccountTreeDigest !== localAccountTreeDigest) {
+			throw Error('Account tree digests do not match, aborting. Local: '+localAccountTreeDigest+', Foreign: '+foreignAccountTreeDigest);
+		}
+	}
+
 }
 
 export default SignTransactionAnnounceRCommitmentPhase;

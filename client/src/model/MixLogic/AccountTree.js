@@ -165,7 +165,7 @@ class AccountTree {
 
 		let string = JSON.stringify(this.GetTreeDump());
 		let bytes = (new TextEncoder()).encode(string);
-		return blakejs.blake2b(bytes);
+		return blakejs.blake2bHex(bytes);
 	}
 
 	createLeafAccountNode(componentPublicKeysHex) {

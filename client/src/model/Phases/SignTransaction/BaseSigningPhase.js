@@ -24,6 +24,21 @@ class BaseSigningPhase extends BasePhase {
 		}
 	}
 
+	getRequiredForeignPubKeysHexForTransaction(messageToSign) {
+		let requiredPubKeysHex = this.latestState.AccountTree.GetPubKeysHexForTransactionHash(messageToSign);
+		return requiredPubKeysHex.filter((pubKeyHex) => {
+			let result = true;
+			this.myPubKeys.forEach((myPubKey) => {
+				if (this.signatureDataCodec.EncodePublicKey(myPubKey) === pubKeyHex) {
+					result = false;
+					return false;
+				}
+			});
+
+			return result;
+		});
+	}
+
 	// ensureDataStructuresAreDefined(messageToSign) {
 	// 	if (!this.foreignRCommitments[messageToSign]) {
 	// 		this.foreignRCommitments[messageToSign] = {};

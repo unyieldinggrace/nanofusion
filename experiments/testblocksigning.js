@@ -73,6 +73,15 @@ function getAHashSignatureComponent(playerPublicKeyPoint, pubKeys) {
 }
 
 function getAggregatedPublicKeyPoint(pubKeys) {
+	let sortPointsByHexRepresentation = (point1, point2) => {
+		let point1Hex = byteArrayToHex(ec.encodePoint(point1));
+		let point2Hex = byteArrayToHex(ec.encodePoint(point2));
+
+		return point1Hex.localeCompare(point2Hex);
+	};
+
+	pubKeys.sort(sortPointsByHexRepresentation);
+
 	let aggregatedPublicKeyPoint = null;
 	let aHashComponent = null;
 	let aggregationComponentPoint = null;
@@ -170,6 +179,10 @@ let pubKeys = [
 	// playerData3.publicKeyPoint,
 ];
 
+// console.log(pubKeys.map((pubKey) => {
+// 	return byteArrayToHex(ec.encodePoint(pubKey));
+// }));
+
 let RPoints = [
 	signatureComponents1.RPoint,
 	signatureComponents2.RPoint,
@@ -179,7 +192,7 @@ let RPoints = [
 let aggregatedRPoint = getAggregatedRPoint(RPoints);
 let signatureContribution1 = getSignatureContribution(aggregatedRPoint, pubKeys, blockHash, playerData1, signatureComponents1);
 let signatureContribution2 = getSignatureContribution(aggregatedRPoint, pubKeys, blockHash, playerData2, signatureComponents2);
-// let signatureContribution3 = getSignatureContribution(aggregatedRPoint, inputPubKeys, blockHash, playerData3, signatureComponents3);
+// let signatureContribution3 = getSignatureContribution(aggregatedRPoint, pubKeys, blockHash, playerData3, signatureComponents3);
 
 let signatureContributions = [
 	signatureContribution1,

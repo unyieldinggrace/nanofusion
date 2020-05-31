@@ -1,10 +1,10 @@
-import BasePhase from "./BaseSigningPhase";
 import MixEventTypes from "../../EventTypes/MixEventTypes";
+import BaseSigningPhase from "./BaseSigningPhase";
 
-class SignTransactionAnnounceRPointPhase extends BasePhase {
+class SignTransactionAnnounceRPointPhase extends BaseSigningPhase {
 	constructor(sessionClient, signatureDataCodec, blockSigner, messageToSign) {
 		super();
-		this.Name = 'Announce RCommitments';
+		this.Name = 'Announce RPoints';
 		this.sessionClient = sessionClient;
 		this.signatureDataCodec = signatureDataCodec;
 		this.blockSigner = blockSigner;
@@ -13,7 +13,7 @@ class SignTransactionAnnounceRPointPhase extends BasePhase {
 		this.sessionClient.SubscribeToEvent(MixEventTypes.AnnounceRPoint, this.onPeerAnnouncesRPoint.bind(this));
 		this.sessionClient.SubscribeToEvent(MixEventTypes.RequestRPoints, this.onPeerRequestsRPoints.bind(this));
 
-		this.foreignRCommitments = null;
+		this.foreignRPoints = null;
 		this.myPrivateKeys = null;
 		this.myPubKeys = null;
 		this.foreignPubKeys = null;
@@ -22,14 +22,14 @@ class SignTransactionAnnounceRPointPhase extends BasePhase {
 
 	executeInternal(state) {
 		this.latestState = state;
-		console.log('Signing Phase: Announcing R Commitment.');
+		console.log('Signing Phase: Announcing R Points.');
 		this.myPrivateKeys = state.MyPrivateKeys;
 		this.myPubKeys = state.MyPubKeys;
 		this.foreignPubKeys = state.ForeignPubKeys;
-		this.foreignRCommitments = state.ForeignRCommitments;
+		this.foreignRPoints = state.ForeignRPoints;
 
-		this.sessionClient.SendEvent(MixEventTypes.RequestRCommitments, {});
-		this.broadcastMyRCommitments();
+		this.sessionClient.SendEvent(MixEventTypes.RequestRPoints, {});
+		this.broadcastMyRPoints();
 	}
 
 	async NotifyOfUpdatedState(state) {
@@ -40,17 +40,17 @@ class SignTransactionAnnounceRPointPhase extends BasePhase {
 	}
 
 	onPeerAnnouncesRPoint(data) {
-		this.checkIncomingMessageIsValid(data, 'RCommitment');
+		this.checkIncomingMessageIsValid(data, 'RPoint');
 
-		let decodedRCommitment = this.signatureDataCodec.DecodeRCommitment(data.Data.RCommitment);
-		let currentRCommitment = this.foreignRCommitments[data.Data.MessageToSign][data.Data.PubKey];
-		if (currentRCommitment && (!currentRCommitment.eq(decodedRCommitment))) {
-			throw new Error('Peer '+data.Data.PubKey+' tried to update RCommitment. This is not allowed. Skipping.');
+		let decodedRPoint = this.signatureDataCodec.DecodeRPoint(data.Data.RPoint);
+		let currentRPoint = this.foreignRPoints[data.Data.MessageToSign][data.Data.PubKey];
+		if (currentRPoint && (!currentRPoint.eq(decodedRPoint))) {
+			throw new Error('Peer '+data.Data.PubKey+' tried to update RPoint. This is not allowed. Skipping.');
 		}
 
-		this.foreignRCommitments[data.Data.MessageToSign][data.Data.PubKey] = decodedRCommitment;
+		this.foreignRPoints[data.Data.MessageToSign][data.Data.PubKey] = decodedRPoint;
 		this.notifyStateChange({
-			ForeignRCommitments: this.foreignRCommitments
+			ForeignRPoints: this.foreignRPoints
 		});
 
 		// this.sessionClient.SendEvent(JointAccountEventTypes.RequestForRPoint, {
@@ -68,20 +68,24 @@ class SignTransactionAnnounceRPointPhase extends BasePhase {
 	}
 
 	onPeerRequestsRPoints() {
-		this.broadcastMyRPoints();
+		if (this.IsRunning()) {
+			this.broadcastMyRPoints();
+		}
 	}
 
 	broadcastMyRPoints() {
 		this.myPrivateKeys.forEach((privateKey) => {
-			console.log('Broadcasting RCommitment for message: '+this.messageToSign);
+			console.log('Broadcasting RPoint for message: '+this.messageToSign);
 
 			let pubKeyPoint = this.blockSigner.GetPublicKeyFromPrivate(privateKey);
-			let RCommitment = this.blockSigner.GetRCommitment(privateKey, this.messageToSign);
+			let RPoint = this.blockSigner.GetRPoint(privateKey, this.messageToSign);
+			let RPointEncoded = this.signatureDataCodec.EncodeRPoint(RPoint);
 
-			this.sessionClient.SendEvent(MixEventTypes.AnnounceRCommitment, {
+			this.sessionClient.SendEvent(MixEventTypes.AnnounceRPoint, {
 				PubKey: this.signatureDataCodec.EncodePublicKey(pubKeyPoint),
-				RCommitment: RCommitment,
-				Signature: this.blockSigner.SignMessageSingle(RCommitment, privateKey)
+				MessageToSign: this.messageToSign,
+				RPoint: RPointEncoded,
+				Signature: this.blockSigner.SignMessageSingle(RPointEncoded, privateKey)
 			});
 		});
 	}

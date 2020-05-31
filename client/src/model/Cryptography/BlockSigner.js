@@ -128,7 +128,7 @@ class BlockSigner {
 
 	GetAggregatedPublicKey(pubKeys) {
 		// console.log('Generating aggregated public key point.');
-		// inputPubKeys.sort(this.sortPointsByHexRepresentation.bind(this));
+		pubKeys.sort(this.SortPointsByHexRepresentation.bind(this));
 
 		let aggregatedPublicKeyPoint = null;
 		let aHashComponent = null;
