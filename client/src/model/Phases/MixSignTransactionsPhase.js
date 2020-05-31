@@ -1,5 +1,4 @@
 import BasePhase from "./BasePhase";
-import MixEventTypes from "../EventTypes/MixEventTypes";
 
 class MixSignTransactionsPhase extends BasePhase {
 	constructor(signTransactionPhaseFactory) {
@@ -7,18 +6,19 @@ class MixSignTransactionsPhase extends BasePhase {
 		this.Name = 'Signing Transactions';
 		this.signTransactionPhaseFactory = signTransactionPhaseFactory;
 		this.latestState = null;
+		this.transactionPhaseTrackers = [];
 	}
 
 	executeInternal(state) {
 		this.latestState = state;
 		console.log('Mix Phase: Signing transactions.');
 		let transactionsToInitiate = this.getTransactionsWhereFirstPubKeyOnAccountIsMine(this.latestState.MixNode);
+
 		transactionsToInitiate.forEach((transaction) => {
 			let phaseTracker = this.signTransactionPhaseFactory.BuildPhaseTracker(transaction.hash);
-			phaseTracker.SetStateUpdateEmittedCallback(this.onSignTransactionPhaseTrackerEmittedState.bind({
-				self: this,
-				sourcePhaseTracker: phaseTracker
-			}));
+			phaseTracker.SetStateUpdateEmittedCallback(this.onSignTransactionPhaseTrackerEmittedState.bind(this));
+
+			this.transactionPhaseTrackers.push(phaseTracker);
 
 			phaseTracker.ExecutePhases(this.latestState);
 		});
@@ -26,11 +26,13 @@ class MixSignTransactionsPhase extends BasePhase {
 
 	async NotifyOfUpdatedState(state) {
 		this.latestState = state;
+		this.transactionPhaseTrackers.forEach((phaseTracker) => {
+			phaseTracker.NotifyOfUpdatedState(this.latestState);
+		});
 	}
 
-	onSignTransactionPhaseTrackerEmittedState() {
-		let self = this.self;
-		let phaseTracker = this.sourcePhaseTracker;
+	onSignTransactionPhaseTrackerEmittedState(state) {
+		this.emitStateUpdate(state);
 	}
 
 	getTransactionsWhereFirstPubKeyOnAccountIsMine(accountNode) {

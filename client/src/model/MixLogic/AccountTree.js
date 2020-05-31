@@ -168,6 +168,43 @@ class AccountTree {
 		return blakejs.blake2bHex(bytes);
 	}
 
+	GetPubKeysHexForTransactionHash(hash) {
+		if (!this.MixNode) {
+			throw Error('Cannot search account tree before all nodes are built.');
+		}
+
+		return this.getPubKeysHexForTransactionHashInternal(hash, this.MixNode);
+	}
+
+	getPubKeysHexForTransactionHashInternal(hash, accountNode) {
+		if (!accountNode) {
+			return null;
+		}
+
+		let result = null;
+
+		Object.keys(accountNode.TransactionPaths).forEach((pathName) => {
+			accountNode.TransactionPaths[pathName].forEach((transaction) => {
+				if (transaction.hash === hash) {
+					result = accountNode.GetComponentPublicKeysHex();
+					return false;
+				}
+			});
+
+			if (result) {
+				return false;
+			}
+		});
+
+		if (!result) {
+			let resultLeft = this.getPubKeysHexForTransactionHashInternal(hash, accountNode.AccountNodeLeft);
+			let resultRight = this.getPubKeysHexForTransactionHashInternal(hash, accountNode.AccountNodeRight);
+			result = resultLeft ? resultLeft : resultRight;
+		}
+
+		return result;
+	}
+
 	createLeafAccountNode(componentPublicKeysHex) {
 		let componentPublicKeys = componentPublicKeysHex.map((pubKeyHex) => {
 			return this.signatureDataCodec.DecodePublicKey(pubKeyHex);
