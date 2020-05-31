@@ -53,7 +53,7 @@ class MixAnnouncePubKeysPhase extends BasePhase {
 
 	broadcastMyPubKeys() {
 		this.myPubKeys.forEach((pubKeyPoint) => {
-			console.log('Broadcasting PubKey: '+this.signatureDataCodec.EncodePublicKey(pubKeyPoint));
+			// console.log('Broadcasting PubKey: '+this.signatureDataCodec.EncodePublicKey(pubKeyPoint));
 
 			this.sessionClient.SendEvent(MixEventTypes.AnnouncePubKey, {
 				PubKey: this.signatureDataCodec.EncodePublicKey(pubKeyPoint)

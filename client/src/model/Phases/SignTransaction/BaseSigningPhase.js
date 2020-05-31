@@ -5,11 +5,11 @@ class BaseSigningPhase extends BasePhase {
 		super();
 	}
 
-	checkIncomingMessageIsValid(data, signedValueKey) {
-		if (data.Data.MessageToSign !== this.messageToSign) {
-			return;
-		}
+	getAnnouncementIsForCorrectMessage(data) {
+		return (data.Data.MessageToSign === this.messageToSign);
+	}
 
+	checkIncomingMessageIsValid(data, signedValueKey) {
 		this.checkPubKeyExists(data.Data.PubKey);
 		this.checkIncomingMessageSignature(data.Data[signedValueKey], data.Data.Signature, data.Data.PubKey);
 		this.ensureDataStructuresAreDefined(data.Data.MessageToSign);

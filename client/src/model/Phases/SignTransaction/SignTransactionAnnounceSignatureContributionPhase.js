@@ -23,14 +23,14 @@ class SignTransactionAnnounceSignatureContributionPhase extends BaseSigningPhase
 
 	executeInternal(state) {
 		this.latestState = state;
-		console.log('Signing Phase: Announcing Signature Contributions.');
+		// console.log('Signing Phase: Announcing Signature Contributions.');
 		this.myPrivateKeys = state.MyPrivateKeys;
 		this.myPubKeys = state.MyPubKeys;
 		this.foreignPubKeys = state.ForeignPubKeys;
 		this.foreignSignatureContributions = state.ForeignSignatureContributions;
 		this.jointSignaturesForHashes = state.JointSignaturesForHashes;
 
-		this.sessionClient.SendEvent(MixEventTypes.RequestSignatureContributions, {});
+		this.sessionClient.SendEvent(MixEventTypes.RequestSignatureContributions, {MessageToSign: this.messageToSign});
 		this.broadcastMySignatureContributions();
 	}
 
@@ -54,6 +54,14 @@ class SignTransactionAnnounceSignatureContributionPhase extends BaseSigningPhase
 	}
 
 	onPeerAnnouncesSignatureContribution(data) {
+		if (!this.getAnnouncementIsForCorrectMessage(data)) {
+			return;
+		}
+
+		if (!this.IsRunning()) {
+			return;
+		}
+
 		this.checkIncomingMessageIsValid(data, 'SignatureContribution');
 
 		let decodedSignatureContribution = this.signatureDataCodec.DecodeSignatureContribution(data.Data.SignatureContribution);
@@ -74,7 +82,11 @@ class SignTransactionAnnounceSignatureContributionPhase extends BaseSigningPhase
 		}
 	}
 
-	onPeerRequestsSignatureContributions() {
+	onPeerRequestsSignatureContributions(data) {
+		if (!this.getAnnouncementIsForCorrectMessage(data)) {
+			return;
+		}
+
 		if (this.IsRunning()) {
 			this.broadcastMySignatureContributions();
 		}
@@ -82,7 +94,7 @@ class SignTransactionAnnounceSignatureContributionPhase extends BaseSigningPhase
 
 	broadcastMySignatureContributions() {
 		this.myPrivateKeys.forEach((privateKey) => {
-			console.log('Broadcasting Signature Contribution for message: '+this.messageToSign);
+			// console.log('Broadcasting Signature Contribution for message: '+this.messageToSign);
 
 			let pubKeyPoint = this.blockSigner.GetPublicKeyFromPrivate(privateKey);
 			let signatureContribution = this.blockSigner.GetSignatureContribution(

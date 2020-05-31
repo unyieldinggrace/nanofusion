@@ -55,8 +55,8 @@ class MixCreateLeafSendBlocksPhase extends BasePhase {
 		let nanoAddress = NanoCurrency.deriveAddress(nanoPublicKey, {useNanoPrefix: true});
 
 		let accountInfo = await this.nanoNodeClient.GetAccountInfo(nanoAddress);
-		console.log(accountInfo);
-		console.log('Nano Address for Key: ' + nanoAddress);
+		// console.log(accountInfo);
+		// console.log('Nano Address for Key: ' + nanoAddress);
 
 		let receivingAccountNode = this.accountTree.GetLeafAccountNodeForPublicKeyHex(publicKeyHex);
 

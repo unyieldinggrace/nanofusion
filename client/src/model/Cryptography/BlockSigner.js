@@ -58,19 +58,19 @@ class BlockSigner {
 		let sigComponents = this.getSignatureComponentsForPlayer(playerData, messageToSign);
 		let aggregatedRPoint = this.getAggregatedRPoint(RPoints);
 
-		console.log('Signature Contribution Inputs:');
-		console.log('Aggregated R Point: ' + this.cryptoUtils.ByteArrayToHex(this.ec.encodePoint(aggregatedRPoint)));
-		console.log('PubKeys: ' + pubKeys.map((pubKey) => { return this.cryptoUtils.ByteArrayToHex(this.ec.encodePoint(pubKey)); }).join('\n'));
-		console.log('Message: ' + messageBytes);
-		console.log('PlayerData:');
-		console.log('\tSecret Key: '+this.cryptoUtils.ByteArrayToHex(playerData.secretKeyBytes));
-		console.log('\tPublic Key: '+this.cryptoUtils.ByteArrayToHex(playerData.publicKeyBytes));
-		console.log('\tMessage Prefix: '+this.cryptoUtils.ByteArrayToHex(playerData.messagePrefix));
-		console.log('\tZValue: '+playerData.zValue);
-		console.log('Signature Components:');
-		console.log('\trHash:' + sigComponents.rHash.toString(16));
-		console.log('\tRCommitment:' + sigComponents.RPointCommitment.toString(16));
-		console.log('\tRPoint:' + this.cryptoUtils.ByteArrayToHex(this.ec.encodePoint(sigComponents.RPoint).toString(16)));
+		// console.log('Signature Contribution Inputs:');
+		// console.log('Aggregated R Point: ' + this.cryptoUtils.ByteArrayToHex(this.ec.encodePoint(aggregatedRPoint)));
+		// console.log('PubKeys: ' + pubKeys.map((pubKey) => { return this.cryptoUtils.ByteArrayToHex(this.ec.encodePoint(pubKey)); }).join('\n'));
+		// console.log('Message: ' + messageBytes);
+		// console.log('PlayerData:');
+		// console.log('\tSecret Key: '+this.cryptoUtils.ByteArrayToHex(playerData.secretKeyBytes));
+		// console.log('\tPublic Key: '+this.cryptoUtils.ByteArrayToHex(playerData.publicKeyBytes));
+		// console.log('\tMessage Prefix: '+this.cryptoUtils.ByteArrayToHex(playerData.messagePrefix));
+		// console.log('\tZValue: '+playerData.zValue);
+		// console.log('Signature Components:');
+		// console.log('\trHash:' + sigComponents.rHash.toString(16));
+		// console.log('\tRCommitment:' + sigComponents.RPointCommitment.toString(16));
+		// console.log('\tRPoint:' + this.cryptoUtils.ByteArrayToHex(this.ec.encodePoint(sigComponents.RPoint).toString(16)));
 
 		return this.getSignatureContributionInternal(aggregatedRPoint, pubKeys, messageBytes, playerData, sigComponents);
 	}
@@ -218,10 +218,10 @@ class BlockSigner {
 	getSignatureComponentsForPlayer(playerData, message) {
 		message = this.cryptoUtils.HexToByteArray(message);
 
-		console.log('Signature components inputs:');
-		console.log('PlayerData.MessagePrefix: '+this.cryptoUtils.ByteArrayToHex(playerData.messagePrefix));
-		console.log('PlayerData.zValue: '+this.cryptoUtils.ByteArrayToHex(playerData.zValue));
-		console.log('Message: '+message);
+		// console.log('Signature components inputs:');
+		// console.log('PlayerData.MessagePrefix: '+this.cryptoUtils.ByteArrayToHex(playerData.messagePrefix));
+		// console.log('PlayerData.zValue: '+this.cryptoUtils.ByteArrayToHex(playerData.zValue));
+		// console.log('Message: '+message);
 
 		let r = this.ec.hashInt(playerData.messagePrefix, message, playerData.zValue);
 		let R = this.ec.g.mul(r);

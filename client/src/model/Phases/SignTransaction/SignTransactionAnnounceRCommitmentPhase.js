@@ -22,13 +22,13 @@ class SignTransactionAnnounceRCommitmentPhase extends BaseSigningPhase {
 
 	executeInternal(state) {
 		this.latestState = state;
-		console.log('Signing Phase: Announcing R Commitments.');
+		// console.log('Signing Phase: Announcing R Commitments.');
 		this.myPrivateKeys = state.MyPrivateKeys;
 		this.myPubKeys = state.MyPubKeys;
 		this.foreignPubKeys = state.ForeignPubKeys;
 		this.foreignRCommitments = state.ForeignRCommitments;
 
-		this.sessionClient.SendEvent(MixEventTypes.RequestRCommitments, {});
+		this.sessionClient.SendEvent(MixEventTypes.RequestRCommitments, {MessageToSign: this.messageToSign});
 		this.broadcastMyRCommitments();
 	}
 
@@ -45,6 +45,14 @@ class SignTransactionAnnounceRCommitmentPhase extends BaseSigningPhase {
 	}
 
 	onPeerAnnouncesRCommitment(data) {
+		if (!this.getAnnouncementIsForCorrectMessage(data)) {
+			return;
+		}
+
+		if (!this.IsRunning()) {
+			return;
+		}
+
 		this.checkIncomingMessageIsValid(data, 'RCommitment');
 		this.checkAccountTreeDigest(data.Data.AccountTreeDigest);
 
@@ -66,13 +74,17 @@ class SignTransactionAnnounceRCommitmentPhase extends BaseSigningPhase {
 		}
 	}
 
-	onPeerRequestsRCommitments() {
+	onPeerRequestsRCommitments(data) {
+		if (!this.getAnnouncementIsForCorrectMessage(data)) {
+			return;
+		}
+
 		this.broadcastMyRCommitments();
 	}
 
 	broadcastMyRCommitments() {
 		this.myPrivateKeys.forEach((privateKey) => {
-			console.log('Broadcasting RCommitment for message: '+this.messageToSign);
+			// console.log('Broadcasting RCommitment for message: '+this.messageToSign);
 
 			let pubKeyPoint = this.blockSigner.GetPublicKeyFromPrivate(privateKey);
 			let RCommitment = this.blockSigner.GetRCommitment(privateKey, this.messageToSign);

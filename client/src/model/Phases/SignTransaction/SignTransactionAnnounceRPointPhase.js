@@ -23,14 +23,14 @@ class SignTransactionAnnounceRPointPhase extends BaseSigningPhase {
 
 	executeInternal(state) {
 		this.latestState = state;
-		console.log('Signing Phase: Announcing R Points.');
+		// console.log('Signing Phase: Announcing R Points.');
 		this.myPrivateKeys = state.MyPrivateKeys;
 		this.myPubKeys = state.MyPubKeys;
 		this.foreignPubKeys = state.ForeignPubKeys;
 		this.foreignRCommitments = state.ForeignRCommitments;
 		this.foreignRPoints = state.ForeignRPoints;
 
-		this.sessionClient.SendEvent(MixEventTypes.RequestRPoints, {});
+		this.sessionClient.SendEvent(MixEventTypes.RequestRPoints, {MessageToSign: this.messageToSign});
 		this.broadcastMyRPoints();
 	}
 
@@ -48,6 +48,14 @@ class SignTransactionAnnounceRPointPhase extends BaseSigningPhase {
 	}
 
 	onPeerAnnouncesRPoint(data) {
+		if (!this.getAnnouncementIsForCorrectMessage(data)) {
+			return;
+		}
+
+		if (!this.IsRunning()) {
+			return;
+		}
+
 		this.checkIncomingMessageIsValid(data, 'RPoint');
 
 		let decodedRPoint = this.signatureDataCodec.DecodeRPoint(data.Data.RPoint);
@@ -75,7 +83,11 @@ class SignTransactionAnnounceRPointPhase extends BaseSigningPhase {
 		}
 	}
 
-	onPeerRequestsRPoints() {
+	onPeerRequestsRPoints(data) {
+		if (!this.getAnnouncementIsForCorrectMessage(data)) {
+			return;
+		}
+
 		if (this.IsRunning()) {
 			this.broadcastMyRPoints();
 		}
@@ -83,7 +95,7 @@ class SignTransactionAnnounceRPointPhase extends BaseSigningPhase {
 
 	broadcastMyRPoints() {
 		this.myPrivateKeys.forEach((privateKey) => {
-			console.log('Broadcasting RPoint for message: '+this.messageToSign);
+			// console.log('Broadcasting RPoint for message: '+this.messageToSign);
 
 			let pubKeyPoint = this.blockSigner.GetPublicKeyFromPrivate(privateKey);
 			let RPoint = this.blockSigner.GetRPoint(privateKey, this.messageToSign);

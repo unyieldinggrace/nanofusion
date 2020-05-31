@@ -134,28 +134,6 @@ class AccountTree {
 		addBranchNodes(rootNodeObject, this.MixNode);
 
 		return rootNodeObject;
-
-		// let serialised = {
-		// 	'node': 1,
-		// 	'left': {
-		// 		'node': 2,
-		// 		'left': {
-		// 			'node': 3
-		// 		},
-		// 		'right': {
-		// 			'node': 4
-		// 		}
-		// 	},
-		// 	'right': {
-		// 		'node': 5,
-		// 		'left': {
-		// 			'node': 6
-		// 		},
-		// 		'right': {
-		// 			'node': 7
-		// 		}
-		// 	}
-		// };
 	}
 
 	Digest() {
@@ -163,7 +141,26 @@ class AccountTree {
 			return null;
 		}
 
-		let string = JSON.stringify(this.GetTreeDump());
+		let stringifyNode = (accountNode) => {
+			if (!accountNode) {
+				return '';
+			}
+
+			let result = '';
+
+			result += stringifyNode(accountNode.AccountNodeLeft);
+			result += stringifyNode(accountNode.AccountNodeRight);
+
+			Object.keys(accountNode.TransactionPaths).forEach((pathName) => {
+				result += accountNode.TransactionPaths[pathName].map((transaction) => {
+					return transaction.hash;
+				}).join(',');
+			});
+
+			return result;
+		};
+
+		let string = stringifyNode(this.MixNode);
 		let bytes = (new TextEncoder()).encode(string);
 		return blakejs.blake2bHex(bytes);
 	}
