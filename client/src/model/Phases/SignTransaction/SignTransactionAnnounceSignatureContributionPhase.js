@@ -47,7 +47,8 @@ class SignTransactionAnnounceSignatureContributionPhase extends BaseSigningPhase
 
 			this.emitStateUpdate({
 				JointSignaturesForHashes: this.jointSignaturesForHashes
-			})
+			});
+
 			this.markPhaseCompleted();
 		}
 	}
@@ -65,13 +66,6 @@ class SignTransactionAnnounceSignatureContributionPhase extends BaseSigningPhase
 		this.notifyStateChange({
 			ForeignSignatureContributions: this.foreignSignatureContributions
 		});
-
-		// this.sessionClient.SendEvent(JointAccountEventTypes.RequestForRPoint, {
-		// 	MessageToSign: data.Data.MessageToSign,
-		// 	RCommitments: this.getRCommitmentMapEncoded(data.Data.MessageToSign)
-		// });
-
-		// this.provideMyRPoint(data.Data.MessageToSign);
 	}
 
 	ensureDataStructuresAreDefined(messageToSign) {
@@ -88,7 +82,7 @@ class SignTransactionAnnounceSignatureContributionPhase extends BaseSigningPhase
 
 	broadcastMySignatureContributions() {
 		this.myPrivateKeys.forEach((privateKey) => {
-			console.log('Broadcasting RPoint for message: '+this.messageToSign);
+			console.log('Broadcasting Signature Contribution for message: '+this.messageToSign);
 
 			let pubKeyPoint = this.blockSigner.GetPublicKeyFromPrivate(privateKey);
 			let signatureContribution = this.blockSigner.GetSignatureContribution(privateKey, this.messageToSign, pubKeys, RPoints);
@@ -110,16 +104,88 @@ class SignTransactionAnnounceSignatureContributionPhase extends BaseSigningPhase
 		}
 
 		let jointSignature = this.getJointSignature(this.messageToSign);
-		let pubKeysForTransaction = this.latestState.AccountTree.GetPubKeysHexForTransactionHash(messageToSign).map((pubKeyHex) => {
-			return this.signatureDataCodec.DecodePublicKey(pubKeyHex);
-		});
 
-		let aggregatedPublicKey = this.blockSigner.GetAggregatedPublicKey(pubKeysForTransaction);
+		let aggregatedPublicKey = this.blockSigner.GetAggregatedPublicKey(this.getAllPubKeys(this.messageToSign));
 		return this.blockSigner.VerifyMessageSingle(this.messageToSign, jointSignature, aggregatedPublicKey);
 	}
 
 	getJointSignature(messageToSign) {
+		return this.blockSigner.SignMessageMultiple(
+			messageToSign,
+			this.getAllSignatureContributions(messageToSign),
+			this.getAllRPoints(messageToSign)
+		);
+	}
 
+	getAllSignatureContributions(messageToSign) {
+		let allSignatureContributions = [];
+		Object.keys(this.latestState.ForeignSignatureContributions[messageToSign]).forEach((key) => {
+			let signatureContribution = this.latestState.ForeignSignatureContributions[messageToSign][key];
+
+			allSignatureContributions.push({
+				PubKeyHex: key,
+				SignatureContribution: signatureContribution
+			});
+		});
+
+		this.myPrivateKeys.forEach((privateKey) => {
+			let signatureContribution = this.blockSigner.GetSignatureContribution(
+				privateKey,
+				messageToSign,
+				this.getAllPubKeys(messageToSign),
+				this.getAllRPoints(messageToSign)
+			);
+
+			let pubKey = this.blockSigner.GetPublicKeyFromPrivate(privateKey);
+			let pubKeyHex = this.signatureDataCodec.EncodePublicKey(pubKey);
+
+			allSignatureContributions.push({
+				PubKeyHex: pubKeyHex,
+				SignatureContribution: signatureContribution
+			});
+		});
+
+		allSignatureContributions.sort((a, b) => {
+			return a.PubKeyHex.localeCompare(b.PubKeyHex);
+		});
+
+		return allSignatureContributions.map((obj) => {
+			return obj.SignatureContribution;
+		});
+	}
+
+	getAllRPoints(messageToSign) {
+		let allRPoints = [];
+		Object.keys(this.latestState.ForeignRPoints[messageToSign]).forEach((key) => {
+			allRPoints.push({
+				PubKeyHex: key,
+				RPoint: this.latestState.ForeignRPoints[messageToSign][key]
+			});
+		});
+
+		this.myPrivateKeys.forEach((privateKey) => {
+			let pubKey = this.blockSigner.GetPublicKeyFromPrivate(privateKey);
+			let pubKeyHex = this.signatureDataCodec.EncodePublicKey(pubKey);
+
+			allRPoints.push({
+				PubKeyHex: pubKeyHex,
+				RPoint: this.blockSigner.GetRPoint(privateKey, messageToSign)
+			});
+		});
+
+		allRPoints.sort((a, b) => {
+			return a.PubKeyHex.localeCompare(b.PubKeyHex);
+		});
+
+		return allRPoints.map((obj) => {
+			return obj.RPoint;
+		});
+	}
+
+	getAllPubKeys(messageToSign) {
+		return this.latestState.AccountTree.GetPubKeysHexForTransactionHash(messageToSign).map((pubKeyHex) => {
+			return this.signatureDataCodec.DecodePublicKey(pubKeyHex);
+		});
 	}
 }
 
