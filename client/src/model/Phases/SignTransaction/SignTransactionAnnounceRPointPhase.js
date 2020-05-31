@@ -23,6 +23,11 @@ class SignTransactionAnnounceRPointPhase extends BaseSigningPhase {
 
 	executeInternal(state) {
 		this.latestState = state;
+
+		// if (this.KNOWN_TRANSACTIONS.indexOf(this.messageToSign) === -1) {
+		// 	console.log('Signing Phase: Announce R Points for "'+this.messageToSign+'"');
+		// }
+
 		// console.log('Signing Phase: Announcing R Points.');
 		this.myPrivateKeys = state.MyPrivateKeys;
 		this.myPubKeys = state.MyPubKeys;

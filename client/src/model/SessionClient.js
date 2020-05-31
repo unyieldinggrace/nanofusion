@@ -35,8 +35,8 @@ class SessionClient {
 	}
 
 	SendEvent(eventType, data) {
-		console.log(eventType);
-		console.log(data);
+		// console.log(eventType);
+		// console.log(data);
 
 		this.socket.send(JSON.stringify({
 			'MessageType': 'MessageOtherParticipants',
@@ -51,8 +51,8 @@ class SessionClient {
 	// Internal State Functions
 	onSocketMessage(event) {
 		let message = JSON.parse(event.data);
-		console.log('[message] Data received from server:');
-		console.log(message);
+		// console.log('[message] Data received from server:');
+		// console.log(message);
 
 		if (message.JoinSessionResponse) {
 			this.socket.ClientID = message.ClientID;

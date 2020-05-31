@@ -21,6 +21,7 @@ class UseMixer extends Component {
 			ForeignRCommitments: {},
 			ForeignRPoints: {},
 			ForeignSignatureContributions: {},
+			TransactionsToSign: 0,
 			JointSignaturesForHashes: {}
 		};
 
@@ -417,6 +418,13 @@ class UseMixer extends Component {
 				</Row>
 				<Row className="AccountTreeRow">
 					{this.getAccountTree(this.state.AccountTree)}
+				</Row>
+				<Row>
+					<Col>
+						Transactions Signed: {Object.keys(this.state.JointSignaturesForHashes).length} / {this.state.TransactionsToSign}
+						<br />
+						{Object.keys(this.state.JointSignaturesForHashes).join('\n')}
+					</Col>
 				</Row>
 			</Container>
 		);

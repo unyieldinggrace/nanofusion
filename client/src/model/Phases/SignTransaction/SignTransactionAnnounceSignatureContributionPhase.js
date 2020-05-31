@@ -1,5 +1,6 @@
 import MixEventTypes from "../../EventTypes/MixEventTypes";
 import BaseSigningPhase from "./BaseSigningPhase";
+import * as NanoCurrency from "nanocurrency";
 
 class SignTransactionAnnounceSignatureContributionPhase extends BaseSigningPhase {
 	constructor(sessionClient, signatureDataCodec, blockSigner, messageToSign) {
@@ -23,6 +24,11 @@ class SignTransactionAnnounceSignatureContributionPhase extends BaseSigningPhase
 
 	executeInternal(state) {
 		this.latestState = state;
+
+		if (this.KNOWN_TRANSACTIONS.indexOf(this.messageToSign) === -1) {
+			console.log('Signing Phase: Announce Signature Contributions for "'+this.messageToSign+'"');
+		}
+
 		// console.log('Signing Phase: Announcing Signature Contributions.');
 		this.myPrivateKeys = state.MyPrivateKeys;
 		this.myPubKeys = state.MyPubKeys;
@@ -128,7 +134,24 @@ class SignTransactionAnnounceSignatureContributionPhase extends BaseSigningPhase
 		let jointSignature = this.getJointSignature(this.messageToSign);
 
 		let aggregatedPublicKey = this.blockSigner.GetAggregatedPublicKey(this.getAllPubKeys(this.messageToSign));
-		return this.blockSigner.VerifyMessageSingle(this.messageToSign, jointSignature, aggregatedPublicKey);
+		// return this.blockSigner.VerifyMessageSingle(this.messageToSign, jointSignature, aggregatedPublicKey);
+
+		return this.getNanoTransactionIsValid(this.messageToSign, jointSignature, this.signatureDataCodec.EncodePublicKey(aggregatedPublicKey));
+	}
+
+	getNanoTransactionIsValid(blockHash, aggregatedSignature, aggPubKeyHex) {
+		let nanoResult = NanoCurrency.verifyBlock({
+			// hash: byteArrayToHex(blockHash),
+			hash: blockHash,
+			signature: aggregatedSignature,
+			publicKey: aggPubKeyHex
+		});
+
+		if (!nanoResult) {
+			console.log('Failed nano verification for '+blockHash);
+		}
+
+		return nanoResult;
 	}
 
 	getJointSignature(messageToSign) {

@@ -23,6 +23,10 @@ class MixSignTransactionsPhase extends BasePhase {
 
 			phaseTracker.ExecutePhases(this.latestState);
 		});
+
+		this.emitStateUpdate({
+			TransactionsToSign: this.transactionPhaseTrackers.length
+		});
 	}
 
 	async NotifyOfUpdatedState(state) {
@@ -30,6 +34,18 @@ class MixSignTransactionsPhase extends BasePhase {
 		this.transactionPhaseTrackers.forEach((phaseTracker) => {
 			phaseTracker.NotifyOfUpdatedState(this.latestState);
 		});
+
+		if (!this.IsRunning()) {
+			return;
+		}
+
+		if (this.transactionPhaseTrackers.length === 0) {
+			return;
+		}
+
+		if (this.transactionPhaseTrackers.length === Object.keys(this.latestState.JointSignaturesForHashes).length) {
+			this.markPhaseCompleted();
+		}
 	}
 
 	onSignTransactionPhaseTrackerEmittedState(state) {
