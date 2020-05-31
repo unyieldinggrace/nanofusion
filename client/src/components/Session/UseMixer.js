@@ -190,7 +190,8 @@ class UseMixer extends Component {
 			rows[nodeRow].push({
 				ColSpan: colSpan,
 				NanoAddress: accountNode.NanoAddress,
-				Amount: NanoAmountConverter.prototype.ConvertRawAmountToNanoAmount(accountNode.MixAmountRaw)
+				Amount: NanoAmountConverter.prototype.ConvertRawAmountToNanoAmount(accountNode.MixAmountRaw),
+				Transactions: accountNode.TransactionPaths.Success.map((transaction) => { return transaction.hash; })
 			});
 
 			return colSpan;
@@ -217,6 +218,8 @@ class UseMixer extends Component {
 											{this.formatNanoAddress(nodeCell.NanoAddress)}
 											<br />
 											Mix amount: {nodeCell.Amount}
+											<br />
+											Transactions: {nodeCell.Transactions.join('\n')}
 										</td>);
 								})
 							}
@@ -252,7 +255,8 @@ class UseMixer extends Component {
 					sendBlockColumns.push((
 						<td key={nanoAddress+balance}>
 							Input: {this.formatNanoAddress(nanoAddress)}<br />
-							Balance: {balance}
+							Balance: {balance}<br />
+							Send Hash: {leafSendBlock.hash}
 						</td>
 					));
 				}

@@ -71,7 +71,7 @@ class SignTransactionAnnounceSignatureContributionPhase extends BaseSigningPhase
 		}
 
 		this.foreignSignatureContributions[data.Data.MessageToSign][data.Data.PubKey] = decodedSignatureContribution;
-		this.notifyStateChange({
+		this.emitStateUpdate({
 			ForeignSignatureContributions: this.foreignSignatureContributions
 		});
 	}

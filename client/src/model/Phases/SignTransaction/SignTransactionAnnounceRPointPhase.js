@@ -65,7 +65,7 @@ class SignTransactionAnnounceRPointPhase extends BaseSigningPhase {
 		}
 
 		this.foreignRPoints[data.Data.MessageToSign][data.Data.PubKey] = decodedRPoint;
-		this.notifyStateChange({
+		this.emitStateUpdate({
 			ForeignRPoints: this.foreignRPoints
 		});
 

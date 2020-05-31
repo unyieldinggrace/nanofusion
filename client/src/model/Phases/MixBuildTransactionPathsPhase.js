@@ -22,6 +22,7 @@ class MixBuildTransactionPathsPhase extends BasePhase {
 
 		console.log('Tree Dump:');
 		console.log(this.accountTree.GetTreeDump());
+		console.log(this.accountTree.Digest());
 
 		this.emitStateUpdate({
 			AccountTree: this.accountTree

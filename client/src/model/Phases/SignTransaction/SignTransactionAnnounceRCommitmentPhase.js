@@ -63,7 +63,7 @@ class SignTransactionAnnounceRCommitmentPhase extends BaseSigningPhase {
 		}
 
 		this.foreignRCommitments[data.Data.MessageToSign][data.Data.PubKey] = decodedRCommitment;
-		this.notifyStateChange({
+		this.emitStateUpdate({
 			ForeignRCommitments: this.foreignRCommitments
 		});
 	}

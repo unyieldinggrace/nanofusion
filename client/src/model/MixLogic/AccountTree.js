@@ -241,7 +241,7 @@ class AccountTree {
 		}
 
 		let lastSuccessPathBlock = null;
-		let accountBalance ='0';
+		let accountBalance = '0';
 		[accountNode.AccountNodeLeft, accountNode.AccountNodeRight].forEach((branchNode) => {
 			if (!branchNode) {
 				return true;
@@ -310,8 +310,25 @@ class AccountTree {
 		let lastSuccessPathBlock = null;
 		let accountBalance = '0';
 
+		// if (accountNode.NanoAddress === 'nano_1hsmfopn1mzhrutqe7pzbjd66gwtrwdcancreptu1f1m99j8tbysh79x7ji5') {
+		// 	console.log('Leaf send blocks for culprit Nano Address.');
+		// 	console.log('-');
+		// 	console.log('-');
+		// 	console.log('-');
+		// 	console.log('-');
+		// }
+
+		accountNode.IncomingLeafSendBlocks.sort((a, b) => {
+			return a.Block.hash.localeCompare(b.Block.hash);
+		});
+
 		accountNode.IncomingLeafSendBlocks.forEach((leafSendBlock) => {
 			accountBalance = NanoAmountConverter.prototype.AddRawAmounts(accountBalance, leafSendBlock.AmountRaw);
+
+			// if (accountNode.NanoAddress === 'nano_1hsmfopn1mzhrutqe7pzbjd66gwtrwdcancreptu1f1m99j8tbysh79x7ji5') {
+			// 	console.log('Leaf: ' + leafSendBlock.Block.hash);
+			// 	console.log('Last Success: ' + leafSendBlock.Block.hash);
+			// }
 
 			lastSuccessPathBlock = this.blockBuilder.GetUnsignedReceiveBlock(
 				accountNode.NanoAddress,
