@@ -85,12 +85,13 @@ class SignTransactionAnnounceRPointPhase extends BaseSigningPhase {
 				PubKey: this.signatureDataCodec.EncodePublicKey(pubKeyPoint),
 				MessageToSign: this.messageToSign,
 				RPoint: RPointEncoded,
-				Signature: this.blockSigner.SignMessageSingle(RPointEncoded, privateKey)
+				Signature: this.blockSigner.SignMessageSingle(RPointEncoded, privateKey).toHex()
 			});
 		});
 	}
 
 	getAllRPointsReceivedAndValidated() {
+		// TODO: validate R Commitments
 		// if (this.getRCommitmentSet(data.Data.MessageToSign).length === this.getPubKeySet().length) {
 		// 	return true;
 		// }

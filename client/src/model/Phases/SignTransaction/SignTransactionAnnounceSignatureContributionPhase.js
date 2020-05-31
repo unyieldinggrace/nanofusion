@@ -85,14 +85,20 @@ class SignTransactionAnnounceSignatureContributionPhase extends BaseSigningPhase
 			console.log('Broadcasting Signature Contribution for message: '+this.messageToSign);
 
 			let pubKeyPoint = this.blockSigner.GetPublicKeyFromPrivate(privateKey);
-			let signatureContribution = this.blockSigner.GetSignatureContribution(privateKey, this.messageToSign, pubKeys, RPoints);
+			let signatureContribution = this.blockSigner.GetSignatureContribution(
+				privateKey,
+				this.messageToSign,
+				this.getAllPubKeys(this.messageToSign),
+				this.getAllRPoints(this.messageToSign)
+			);
+
 			let signatureContributionEncoded = this.signatureDataCodec.EncodeSignatureContribution(signatureContribution);
 
 			this.sessionClient.SendEvent(MixEventTypes.AnnounceSignatureContribution, {
 				PubKey: this.signatureDataCodec.EncodePublicKey(pubKeyPoint),
 				MessageToSign: this.messageToSign,
 				SignatureContribution: signatureContributionEncoded,
-				Signature: this.blockSigner.SignMessageSingle(signatureContributionEncoded, privateKey)
+				Signature: this.blockSigner.SignMessageSingle(signatureContributionEncoded, privateKey).toHex()
 			});
 		});
 	}

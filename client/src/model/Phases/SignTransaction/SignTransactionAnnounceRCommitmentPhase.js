@@ -78,14 +78,18 @@ class SignTransactionAnnounceRCommitmentPhase extends BaseSigningPhase {
 				MessageToSign: this.messageToSign,
 				AccountTreeDigest: this.latestState.AccountTree.Digest(),
 				RCommitment: RCommitmentEncoded,
-				Signature: this.blockSigner.SignMessageSingle(RCommitmentEncoded, privateKey)
+				Signature: this.blockSigner.SignMessageSingle(RCommitmentEncoded, privateKey).toHex()
 			});
 		});
 	}
 
 	getAllRCommitmentsReceived() {
 		let requiredForeignPubKeysHex = this.getRequiredForeignPubKeysHexForTransaction(this.messageToSign);
-		return (this.foreignRCommitments[this.messageToSign].length === requiredForeignPubKeysHex.length);
+		let numForeignRCommitments = this.foreignRCommitments[this.messageToSign]
+			? Object.keys(this.foreignRCommitments[this.messageToSign]).length
+			: 0;
+
+		return (numForeignRCommitments === requiredForeignPubKeysHex.length);
 	}
 
 	checkAccountTreeDigest(foreignAccountTreeDigest) {

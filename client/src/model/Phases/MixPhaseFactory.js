@@ -39,7 +39,7 @@ class MixPhaseFactory {
 		// let buildRefundPathsPhase = new MixBuildRefundPathsPhase(this.blockBuilder);
 		// buildRefundPathsPhase.SetPrerequisitePhases([buildTransactionPathsPhase]);
 
-		let signTransactionsPhase = new MixSignTransactionsPhase(this.signTransactionPhaseFactory)
+		let signTransactionsPhase = new MixSignTransactionsPhase(this.signTransactionPhaseFactory, this.signatureDataCodec);
 		// signTransactionsPhase.SetPrerequisitePhases([buildRefundPathsPhase]);
 		signTransactionsPhase.SetPrerequisitePhases([buildTransactionPathsPhase]);
 

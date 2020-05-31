@@ -1,10 +1,11 @@
 import BasePhase from "./BasePhase";
 
 class MixSignTransactionsPhase extends BasePhase {
-	constructor(signTransactionPhaseFactory) {
+	constructor(signTransactionPhaseFactory, signatureDataCodec) {
 		super();
 		this.Name = 'Signing Transactions';
 		this.signTransactionPhaseFactory = signTransactionPhaseFactory;
+		this.signatureDataCodec = signatureDataCodec;
 		this.latestState = null;
 		this.transactionPhaseTrackers = [];
 	}
@@ -12,7 +13,7 @@ class MixSignTransactionsPhase extends BasePhase {
 	executeInternal(state) {
 		this.latestState = state;
 		console.log('Mix Phase: Signing transactions.');
-		let transactionsToInitiate = this.getTransactionsWhereFirstPubKeyOnAccountIsMine(this.latestState.MixNode);
+		let transactionsToInitiate = this.getTransactionsWhereFirstPubKeyOnAccountIsMine(this.latestState.AccountTree.MixNode);
 
 		transactionsToInitiate.forEach((transaction) => {
 			let phaseTracker = this.signTransactionPhaseFactory.BuildPhaseTracker(transaction.hash);
@@ -48,7 +49,11 @@ class MixSignTransactionsPhase extends BasePhase {
 			return a.localeCompare(b);
 		});
 
-		if (this.latestState.MyPubKeys.indexOf(pubKeysForNode[0]) === -1) {
+		let myPubKeysHex = this.latestState.MyPubKeys.map((pubKey) => {
+			return this.signatureDataCodec.EncodePublicKey(pubKey);
+		});
+
+		if (myPubKeysHex.indexOf(pubKeysForNode[0]) === -1) {
 			return leftTransactions.concat(rightTransactions);
 		}
 
