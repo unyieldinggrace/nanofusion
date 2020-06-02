@@ -34,6 +34,16 @@ class SignTransactionAnnounceSignatureContributionPhase extends BaseSigningPhase
 
 		this.sessionClient.SendEvent(MixEventTypes.RequestSignatureContributions, {MessageToSign: this.messageToSign});
 		this.broadcastMySignatureContributions();
+
+		if (this.getAllPubKeysForTransactionAreMine()) {
+			this.latestState.SignatureComponentStore.AddJointSignatureForHash(this.messageToSign, this.getJointSignature(this.messageToSign));
+
+			this.emitStateUpdate({
+				TransactionsSigned: Object.keys(this.latestState.SignatureComponentStore.GetAllJointSignaturesForHashes())
+			});
+
+			this.markPhaseCompleted();
+		}
 	}
 
 	async NotifyOfUpdatedState(state) {
@@ -71,7 +81,7 @@ class SignTransactionAnnounceSignatureContributionPhase extends BaseSigningPhase
 			this.latestState.SignatureComponentStore.AddJointSignatureForHash(this.messageToSign, this.getJointSignature(this.messageToSign));
 
 			this.emitStateUpdate({
-				SignatureComponentStore: this.latestState.SignatureComponentStore
+				TransactionsSigned: Object.keys(this.latestState.SignatureComponentStore.GetAllJointSignaturesForHashes())
 			});
 
 			this.markPhaseCompleted();
@@ -141,6 +151,9 @@ class SignTransactionAnnounceSignatureContributionPhase extends BaseSigningPhase
 		// }
 
 		let jointSignature = this.getJointSignature(this.messageToSign);
+		if (!jointSignature) {
+			return false;
+		}
 
 		let aggregatedPublicKey = this.blockSigner.GetAggregatedPublicKey(this.getAllPubKeys(this.messageToSign));
 		// return this.blockSigner.VerifyMessageSingle(this.messageToSign, jointSignature, aggregatedPublicKey);
@@ -164,8 +177,13 @@ class SignTransactionAnnounceSignatureContributionPhase extends BaseSigningPhase
 	}
 
 	getJointSignature(messageToSign) {
+		let signatureContributions = this.getAllSignatureContributions(messageToSign);
+		if (!signatureContributions.length) {
+			return null;
+		}
+
 		return this.blockSigner.SignMessageMultiple(
-			this.getAllSignatureContributions(messageToSign),
+			signatureContributions,
 			this.getAllRPoints(messageToSign)
 		);
 	}
@@ -183,17 +201,18 @@ class SignTransactionAnnounceSignatureContributionPhase extends BaseSigningPhase
 			console.log(this.latestState.SignatureComponentStore.GetAllSignatureContributions(messageToSign));
 		}
 
-		if (this.latestState.SignatureComponentStore.GetAllSignatureContributions(messageToSign)) {
-			Object.keys(this.latestState.SignatureComponentStore.GetAllSignatureContributions(messageToSign)).forEach((key) => {
-				let signatureContribution = this.latestState.SignatureComponentStore.GetSignatureContribution(messageToSign, key);
+		requiredPubKeysHex.forEach((key) => {
+			let signatureContribution = this.latestState.SignatureComponentStore.GetSignatureContribution(messageToSign, key);
+			if (!signatureContribution) {
+				return true;
+			}
 
-				allSignatureContributions.push({
-					PubKeyHex: key,
-					SignatureContribution: signatureContribution,
-					SignatureContributionHex: this.signatureDataCodec.EncodeSignatureContribution(signatureContribution)
-				});
+			allSignatureContributions.push({
+				PubKeyHex: key,
+				SignatureContribution: signatureContribution,
+				SignatureContributionHex: this.signatureDataCodec.EncodeSignatureContribution(signatureContribution)
 			});
-		}
+		});
 
 		this.myPrivateKeys.forEach((privateKey) => {
 			let pubKey = this.blockSigner.GetPublicKeyFromPrivate(privateKey);
@@ -280,6 +299,24 @@ class SignTransactionAnnounceSignatureContributionPhase extends BaseSigningPhase
 
 	getAllPubKeysHex(messageToSign) {
 		return this.latestState.AccountTree.GetPubKeysHexForTransactionHash(messageToSign);
+	}
+
+	getAllPubKeysForTransactionAreMine() {
+		let result = true;
+
+		let allPubKeysHex = this.getAllPubKeysHex(this.messageToSign);
+		let myPubKeysHex = this.myPubKeys.map((pubKey) => {
+			return this.signatureDataCodec.EncodePublicKey(pubKey);
+		});
+
+		allPubKeysHex.forEach((pubKeyHex) => {
+			if (myPubKeysHex.indexOf(pubKeyHex) === -1) {
+				result = false;
+				return false;
+			}
+		});
+
+		return result;
 	}
 }
 

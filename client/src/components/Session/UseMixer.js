@@ -19,6 +19,7 @@ class UseMixer extends Component {
 			MyOutputAccounts: [],
 			ForeignOutputAccounts: [],
 			TransactionsToSign: 0,
+			TransactionsSigned: [],
 			SignatureComponentStore: new SignatureComponentStore()
 		};
 
@@ -418,9 +419,9 @@ class UseMixer extends Component {
 				</Row>
 				<Row>
 					<Col>
-						Transactions Signed: {Object.keys(this.state.SignatureComponentStore.GetAllJointSignaturesForHashes()).length} / {this.state.TransactionsToSign}
+						Transactions Signed: {this.state.TransactionsSigned.length} / {this.state.TransactionsToSign}
 						<br />
-						{Object.keys(this.state.SignatureComponentStore.GetAllJointSignaturesForHashes()).join('\n')}
+						{this.state.TransactionsSigned.join('\n')}
 					</Col>
 				</Row>
 			</Container>
