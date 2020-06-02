@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import {Container, Row, Col, InputGroup, Form, Button, ButtonGroup, Alert, Table} from 'react-bootstrap';
 import QRCodeImg from "./QRCodeImg";
 import NanoAmountConverter from "../../model/Cryptography/NanoAmountConverter";
+import SignatureComponentStore from "../../model/MixLogic/SignatureComponentStore";
 
 class UseMixer extends Component {
 	constructor(props) {
@@ -17,12 +18,8 @@ class UseMixer extends Component {
 			LeafSendBlockAmounts: {},
 			MyOutputAccounts: [],
 			ForeignOutputAccounts: [],
-			SignedHashes: {},
-			ForeignRCommitments: {},
-			ForeignRPoints: {},
-			ForeignSignatureContributions: {},
 			TransactionsToSign: 0,
-			JointSignaturesForHashes: {}
+			SignatureComponentStore: new SignatureComponentStore()
 		};
 
 		this.sessionClient = this.props.SessionClient;
@@ -421,9 +418,9 @@ class UseMixer extends Component {
 				</Row>
 				<Row>
 					<Col>
-						Transactions Signed: {Object.keys(this.state.JointSignaturesForHashes).length} / {this.state.TransactionsToSign}
+						Transactions Signed: {Object.keys(this.state.SignatureComponentStore.GetAllJointSignaturesForHashes()).length} / {this.state.TransactionsToSign}
 						<br />
-						{Object.keys(this.state.JointSignaturesForHashes).join('\n')}
+						{Object.keys(this.state.SignatureComponentStore.GetAllJointSignaturesForHashes()).join('\n')}
 					</Col>
 				</Row>
 			</Container>

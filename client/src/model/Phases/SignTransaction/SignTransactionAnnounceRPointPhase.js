@@ -13,8 +13,6 @@ class SignTransactionAnnounceRPointPhase extends BaseSigningPhase {
 		this.sessionClient.SubscribeToEvent(MixEventTypes.AnnounceRPoint, this.onPeerAnnouncesRPoint.bind(this));
 		this.sessionClient.SubscribeToEvent(MixEventTypes.RequestRPoints, this.onPeerRequestsRPoints.bind(this));
 
-		this.foreignRCommitments = null;
-		this.foreignRPoints = null;
 		this.myPrivateKeys = null;
 		this.myPubKeys = null;
 		this.foreignPubKeys = null;
@@ -32,8 +30,6 @@ class SignTransactionAnnounceRPointPhase extends BaseSigningPhase {
 		this.myPrivateKeys = state.MyPrivateKeys;
 		this.myPubKeys = state.MyPubKeys;
 		this.foreignPubKeys = state.ForeignPubKeys;
-		this.foreignRCommitments = state.ForeignRCommitments;
-		this.foreignRPoints = state.ForeignRPoints;
 
 		this.sessionClient.SendEvent(MixEventTypes.RequestRPoints, {MessageToSign: this.messageToSign});
 		this.broadcastMyRPoints();
@@ -41,7 +37,6 @@ class SignTransactionAnnounceRPointPhase extends BaseSigningPhase {
 
 	async NotifyOfUpdatedState(state) {
 		this.latestState = state;
-		this.foreignRPoints = state.ForeignRPoints;
 
 		if (!this.IsRunning()) {
 			return;
@@ -64,28 +59,15 @@ class SignTransactionAnnounceRPointPhase extends BaseSigningPhase {
 		this.checkIncomingMessageIsValid(data, 'RPoint');
 
 		let decodedRPoint = this.signatureDataCodec.DecodeRPoint(data.Data.RPoint);
-		let currentRPoint = this.foreignRPoints[data.Data.MessageToSign][data.Data.PubKey];
+		let currentRPoint = this.latestState.SignatureComponentStore.GetRPoint(data.Data.MessageToSign, data.Data.PubKey);
 		if (currentRPoint && (!currentRPoint.eq(decodedRPoint))) {
 			throw new Error('Peer '+data.Data.PubKey+' tried to update RPoint. This is not allowed. Skipping.');
 		}
 
-		this.foreignRPoints[data.Data.MessageToSign][data.Data.PubKey] = decodedRPoint;
+		this.latestState.SignatureComponentStore.AddRPoint(data.Data.MessageToSign, data.Data.PubKey, decodedRPoint);
 		this.emitStateUpdate({
-			ForeignRPoints: this.foreignRPoints
+			SignatureComponentStore: this.latestState.SignatureComponentStore
 		});
-
-		// this.sessionClient.SendEvent(JointAccountEventTypes.RequestForRPoint, {
-		// 	MessageToSign: data.Data.MessageToSign,
-		// 	RCommitments: this.getRCommitmentMapEncoded(data.Data.MessageToSign)
-		// });
-
-		// this.provideMyRPoint(data.Data.MessageToSign);
-	}
-
-	ensureDataStructuresAreDefined(messageToSign) {
-		if (!this.foreignRPoints[messageToSign]) {
-			this.foreignRPoints[messageToSign] = {};
-		}
 	}
 
 	onPeerRequestsRPoints(data) {
@@ -99,10 +81,18 @@ class SignTransactionAnnounceRPointPhase extends BaseSigningPhase {
 	}
 
 	broadcastMyRPoints() {
+		let requiredPubKeysHex = this.latestState.AccountTree.GetPubKeysHexForTransactionHash(this.messageToSign);
+
 		this.myPrivateKeys.forEach((privateKey) => {
-			// console.log('Broadcasting RPoint for message: '+this.messageToSign);
+			// console.log('Broadcasting Signature Contribution for message: '+this.messageToSign);
 
 			let pubKeyPoint = this.blockSigner.GetPublicKeyFromPrivate(privateKey);
+			let pubKeyHex = this.signatureDataCodec.EncodePublicKey(pubKeyPoint);
+
+			if (requiredPubKeysHex.indexOf(pubKeyHex) === -1) {
+				return true;
+			}
+
 			let RPoint = this.blockSigner.GetRPoint(privateKey, this.messageToSign);
 			let RPointEncoded = this.signatureDataCodec.EncodeRPoint(RPoint);
 
@@ -117,8 +107,8 @@ class SignTransactionAnnounceRPointPhase extends BaseSigningPhase {
 
 	getAllRPointsReceivedAndValidated() {
 		let requiredForeignPubKeysHex = this.getRequiredForeignPubKeysHexForTransaction(this.messageToSign);
-		let numForeignRPoints = this.foreignRPoints[this.messageToSign]
-			? Object.keys(this.foreignRPoints[this.messageToSign]).length
+		let numForeignRPoints = this.latestState.SignatureComponentStore.GetAllRPoints(this.messageToSign)
+			? Object.keys(this.latestState.SignatureComponentStore.GetAllRPoints(this.messageToSign)).length
 			: 0;
 
 		if (numForeignRPoints !== requiredForeignPubKeysHex.length) {
@@ -131,13 +121,18 @@ class SignTransactionAnnounceRPointPhase extends BaseSigningPhase {
 	}
 
 	checkAllRCommitmentsAreValid(messageToSign) {
-		if (!Object.keys(this.foreignRPoints).length || !Object.keys(this.foreignRCommitments).length) {
+		if (!(
+			this.latestState.SignatureComponentStore.GetAllRPoints(this.messageToSign)
+			&& this.latestState.SignatureComponentStore.GetAllRCommitments(this.messageToSign)
+			&& this.latestState.SignatureComponentStore.GetAllRPoints(this.messageToSign).length
+			&& this.latestState.SignatureComponentStore.GetAllRCommitments(this.messageToSign).length
+		)) {
 			return; // all RPoints are mine
 		}
 
-		Object.keys(this.foreignRCommitments[messageToSign]).forEach((key) => {
-			let RPoint = this.foreignRPoints[messageToSign][key];
-			let RCommitment = this.foreignRCommitments[messageToSign][key];
+		Object.keys(this.latestState.SignatureComponentStore.GetAllRCommitments(messageToSign)).forEach((key) => {
+			let RPoint = this.latestState.SignatureComponentStore.GetRPoint(messageToSign, key);
+			let RCommitment = this.latestState.SignatureComponentStore.GetRCommitment(messageToSign, key);
 
 			if (!this.blockSigner.GetRPointValid(RPoint, RCommitment)) {
 				throw Error('RCommitment does not match RPoint for PubKey: '+key);

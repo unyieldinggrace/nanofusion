@@ -43,7 +43,7 @@ class MixSignTransactionsPhase extends BasePhase {
 			return;
 		}
 
-		if (this.transactionPhaseTrackers.length === Object.keys(this.latestState.JointSignaturesForHashes).length) {
+		if (this.transactionPhaseTrackers.length === Object.keys(this.latestState.SignatureComponentStore.GetAllJointSignaturesForHashes()).length) {
 			this.markPhaseCompleted();
 		}
 	}

@@ -13,7 +13,6 @@ class SignTransactionAnnounceRCommitmentPhase extends BaseSigningPhase {
 		this.sessionClient.SubscribeToEvent(MixEventTypes.AnnounceRCommitment, this.onPeerAnnouncesRCommitment.bind(this));
 		this.sessionClient.SubscribeToEvent(MixEventTypes.RequestRCommitments, this.onPeerRequestsRCommitments.bind(this));
 
-		this.foreignRCommitments = null;
 		this.myPrivateKeys = null;
 		this.myPubKeys = null;
 		this.foreignPubKeys = null;
@@ -31,7 +30,6 @@ class SignTransactionAnnounceRCommitmentPhase extends BaseSigningPhase {
 		this.myPrivateKeys = state.MyPrivateKeys;
 		this.myPubKeys = state.MyPubKeys;
 		this.foreignPubKeys = state.ForeignPubKeys;
-		this.foreignRCommitments = state.ForeignRCommitments;
 
 		this.sessionClient.SendEvent(MixEventTypes.RequestRCommitments, {MessageToSign: this.messageToSign});
 		this.broadcastMyRCommitments();
@@ -62,21 +60,15 @@ class SignTransactionAnnounceRCommitmentPhase extends BaseSigningPhase {
 		this.checkAccountTreeDigest(data.Data.AccountTreeDigest);
 
 		let decodedRCommitment = this.signatureDataCodec.DecodeRCommitment(data.Data.RCommitment);
-		let currentRCommitment = this.foreignRCommitments[data.Data.MessageToSign][data.Data.PubKey];
+		let currentRCommitment = this.latestState.SignatureComponentStore.GetRCommitment(data.Data.MessageToSign, data.Data.PubKey);
 		if (currentRCommitment && (!currentRCommitment.eq(decodedRCommitment))) {
 			throw new Error('Peer '+data.Data.PubKey+' tried to update RCommitment. This is not allowed. Skipping.');
 		}
 
-		this.foreignRCommitments[data.Data.MessageToSign][data.Data.PubKey] = decodedRCommitment;
+		this.latestState.SignatureComponentStore.AddRCommitment(data.Data.MessageToSign, data.Data.PubKey, decodedRCommitment);
 		this.emitStateUpdate({
-			ForeignRCommitments: this.foreignRCommitments
+			SignatureComponentStore: this.latestState.SignatureComponentStore
 		});
-	}
-
-	ensureDataStructuresAreDefined(messageToSign) {
-		if (!this.foreignRCommitments[messageToSign]) {
-			this.foreignRCommitments[messageToSign] = {};
-		}
 	}
 
 	onPeerRequestsRCommitments(data) {
@@ -88,10 +80,18 @@ class SignTransactionAnnounceRCommitmentPhase extends BaseSigningPhase {
 	}
 
 	broadcastMyRCommitments() {
+		let requiredPubKeysHex = this.latestState.AccountTree.GetPubKeysHexForTransactionHash(this.messageToSign);
+
 		this.myPrivateKeys.forEach((privateKey) => {
-			// console.log('Broadcasting RCommitment for message: '+this.messageToSign);
+			// console.log('Broadcasting Signature Contribution for message: '+this.messageToSign);
 
 			let pubKeyPoint = this.blockSigner.GetPublicKeyFromPrivate(privateKey);
+			let pubKeyHex = this.signatureDataCodec.EncodePublicKey(pubKeyPoint);
+
+			if (requiredPubKeysHex.indexOf(pubKeyHex) === -1) {
+				return true;
+			}
+
 			let RCommitment = this.blockSigner.GetRCommitment(privateKey, this.messageToSign);
 			let RCommitmentEncoded = this.signatureDataCodec.EncodeRCommitment(RCommitment);
 
@@ -107,8 +107,8 @@ class SignTransactionAnnounceRCommitmentPhase extends BaseSigningPhase {
 
 	getAllRCommitmentsReceived() {
 		let requiredForeignPubKeysHex = this.getRequiredForeignPubKeysHexForTransaction(this.messageToSign);
-		let numForeignRCommitments = this.foreignRCommitments[this.messageToSign]
-			? Object.keys(this.foreignRCommitments[this.messageToSign]).length
+		let numForeignRCommitments = this.latestState.SignatureComponentStore.GetAllRCommitments(this.messageToSign)
+			? Object.keys(this.latestState.SignatureComponentStore.GetAllRCommitments(this.messageToSign)).length
 			: 0;
 
 		return (numForeignRCommitments === requiredForeignPubKeysHex.length);
