@@ -17,8 +17,6 @@ class SignTransactionAnnounceSignatureContributionPhase extends BaseSigningPhase
 		this.myPrivateKeys = null;
 		this.myPubKeys = null;
 		this.foreignPubKeys = null;
-		this.jointSignaturesForHashes = null;
-		this.foreignSignatureContributions = null;
 		this.latestState = null;
 	}
 
@@ -33,36 +31,33 @@ class SignTransactionAnnounceSignatureContributionPhase extends BaseSigningPhase
 		this.myPrivateKeys = state.MyPrivateKeys;
 		this.myPubKeys = state.MyPubKeys;
 		this.foreignPubKeys = state.ForeignPubKeys;
-		this.foreignSignatureContributions = state.ForeignSignatureContributions;
-		this.jointSignaturesForHashes = state.JointSignaturesForHashes;
 
 		this.sessionClient.SendEvent(MixEventTypes.RequestSignatureContributions, {MessageToSign: this.messageToSign});
 		this.broadcastMySignatureContributions();
-	}
 
-	async NotifyOfUpdatedState(state) {
-		this.latestState = state;
-		this.foreignSignatureContributions = state.ForeignSignatureContributions;
-		this.jointSignaturesForHashes = state.JointSignaturesForHashes;
-
-		if (!this.IsRunning()) {
-			return;
-		}
-
-		if (this.getAllSignatureContributionsReceivedAndJointSignatureValidated()) {
-			this.jointSignaturesForHashes[this.messageToSign] = this.getJointSignature(this.messageToSign);
+		if (this.getAllPubKeysForTransactionAreMine()) {
+			this.latestState.SignatureComponentStore.AddJointSignatureForHash(this.messageToSign, this.getJointSignature(this.messageToSign));
 
 			this.emitStateUpdate({
-				JointSignaturesForHashes: this.jointSignaturesForHashes
+				TransactionsSigned: Object.keys(this.latestState.SignatureComponentStore.GetAllJointSignaturesForHashes())
 			});
 
 			this.markPhaseCompleted();
 		}
 	}
 
+	async NotifyOfUpdatedState(state) {
+		this.latestState = state;
+	}
+
 	onPeerAnnouncesSignatureContribution(data) {
 		if (!this.getAnnouncementIsForCorrectMessage(data)) {
+			// console.log('Signature contributrion for incorrect message. Skippking.');
 			return;
+		}
+
+		if (data.Data.MessageToSign === 'FC86A202843AA75389383FA0C5ACE814B948B7CB0FBA428CC378ED83B84D9364') {
+			console.log(this.latestState.SignatureComponentStore);
 		}
 
 		if (!this.IsRunning()) {
@@ -72,20 +67,24 @@ class SignTransactionAnnounceSignatureContributionPhase extends BaseSigningPhase
 		this.checkIncomingMessageIsValid(data, 'SignatureContribution');
 
 		let decodedSignatureContribution = this.signatureDataCodec.DecodeSignatureContribution(data.Data.SignatureContribution);
-		let currentSignatureContribution = this.foreignSignatureContributions[data.Data.MessageToSign][data.Data.PubKey];
+		let currentSignatureContribution = this.latestState.SignatureComponentStore.GetSignatureContribution(data.Data.MessageToSign, data.Data.PubKey);
 		if (currentSignatureContribution && (!currentSignatureContribution.eq(decodedSignatureContribution))) {
 			throw new Error('Peer '+data.Data.PubKey+' tried to update Signature Contribution. This is not allowed. Skipping.');
 		}
 
-		this.foreignSignatureContributions[data.Data.MessageToSign][data.Data.PubKey] = decodedSignatureContribution;
-		this.emitStateUpdate({
-			ForeignSignatureContributions: this.foreignSignatureContributions
-		});
-	}
+		this.latestState.SignatureComponentStore.AddSignatureContribution(data.Data.MessageToSign, data.Data.PubKey, decodedSignatureContribution);
+		// this.emitStateUpdate({
+		// 	SignatureComponentStore: this.latestState.SignatureComponentStore
+		// });
 
-	ensureDataStructuresAreDefined(messageToSign) {
-		if (!this.foreignSignatureContributions[messageToSign]) {
-			this.foreignSignatureContributions[messageToSign] = {};
+		if (this.getAllSignatureContributionsReceivedAndJointSignatureValidated()) {
+			this.latestState.SignatureComponentStore.AddJointSignatureForHash(this.messageToSign, this.getJointSignature(this.messageToSign));
+
+			this.emitStateUpdate({
+				TransactionsSigned: Object.keys(this.latestState.SignatureComponentStore.GetAllJointSignaturesForHashes())
+			});
+
+			this.markPhaseCompleted();
 		}
 	}
 
@@ -100,10 +99,18 @@ class SignTransactionAnnounceSignatureContributionPhase extends BaseSigningPhase
 	}
 
 	broadcastMySignatureContributions() {
+		let requiredPubKeysHex = this.latestState.AccountTree.GetPubKeysHexForTransactionHash(this.messageToSign);
+
 		this.myPrivateKeys.forEach((privateKey) => {
 			// console.log('Broadcasting Signature Contribution for message: '+this.messageToSign);
 
 			let pubKeyPoint = this.blockSigner.GetPublicKeyFromPrivate(privateKey);
+			let pubKeyHex = this.signatureDataCodec.EncodePublicKey(pubKeyPoint);
+
+			if (requiredPubKeysHex.indexOf(pubKeyHex) === -1) {
+				return true;
+			}
+
 			let signatureContribution = this.blockSigner.GetSignatureContribution(
 				privateKey,
 				this.messageToSign,
@@ -124,8 +131,14 @@ class SignTransactionAnnounceSignatureContributionPhase extends BaseSigningPhase
 
 	getAllSignatureContributionsReceivedAndJointSignatureValidated() {
 		let requiredForeignPubKeysHex = this.getRequiredForeignPubKeysHexForTransaction(this.messageToSign);
-		let numForeignSignatureContributions = this.foreignSignatureContributions[this.messageToSign]
-			? Object.keys(this.foreignSignatureContributions[this.messageToSign]).length
+
+		// if (this.KNOWN_TRANSACTIONS.indexOf(this.messageToSign) === -1) {
+		// 	console.log('PubKeys for Message: '+this.messageToSign);
+		// 	console.log(requiredForeignPubKeysHex);
+		// }
+
+		let numForeignSignatureContributions = this.latestState.SignatureComponentStore.GetAllSignatureContributions(this.messageToSign)
+			? Object.keys(this.latestState.SignatureComponentStore.GetAllSignatureContributions(this.messageToSign)).length
 			: 0;
 
 		if (numForeignSignatureContributions !== requiredForeignPubKeysHex.length) {
@@ -138,6 +151,9 @@ class SignTransactionAnnounceSignatureContributionPhase extends BaseSigningPhase
 		// }
 
 		let jointSignature = this.getJointSignature(this.messageToSign);
+		if (!jointSignature) {
+			return false;
+		}
 
 		let aggregatedPublicKey = this.blockSigner.GetAggregatedPublicKey(this.getAllPubKeys(this.messageToSign));
 		// return this.blockSigner.VerifyMessageSingle(this.messageToSign, jointSignature, aggregatedPublicKey);
@@ -161,8 +177,13 @@ class SignTransactionAnnounceSignatureContributionPhase extends BaseSigningPhase
 	}
 
 	getJointSignature(messageToSign) {
+		let signatureContributions = this.getAllSignatureContributions(messageToSign);
+		if (!signatureContributions.length) {
+			return null;
+		}
+
 		return this.blockSigner.SignMessageMultiple(
-			this.getAllSignatureContributions(messageToSign),
+			signatureContributions,
 			this.getAllRPoints(messageToSign)
 		);
 	}
@@ -171,17 +192,27 @@ class SignTransactionAnnounceSignatureContributionPhase extends BaseSigningPhase
 		let allSignatureContributions = [];
 		let requiredPubKeysHex = this.getAllPubKeysHex(messageToSign);
 
-		if (this.latestState.ForeignSignatureContributions[messageToSign]) {
-			Object.keys(this.latestState.ForeignSignatureContributions[messageToSign]).forEach((key) => {
-				let signatureContribution = this.latestState.ForeignSignatureContributions[messageToSign][key];
-
-				allSignatureContributions.push({
-					PubKeyHex: key,
-					SignatureContribution: signatureContribution,
-					SignatureContributionHex: this.signatureDataCodec.EncodeSignatureContribution(signatureContribution)
-				});
-			});
+		if (messageToSign === 'FC86A202843AA75389383FA0C5ACE814B948B7CB0FBA428CC378ED83B84D9364') {
+			console.log('Required Pub Keys:');
+			console.log(requiredPubKeysHex);
+			console.log('Available Foreign Pub Keys:');
+			console.log(Object.keys(this.latestState.SignatureComponentStore.GetAllSignatureContributions(messageToSign)).length);
+			console.log(Object.keys(this.latestState.SignatureComponentStore.GetAllSignatureContributions(messageToSign)).join(', '));
+			console.log(this.latestState.SignatureComponentStore.GetAllSignatureContributions(messageToSign));
 		}
+
+		requiredPubKeysHex.forEach((key) => {
+			let signatureContribution = this.latestState.SignatureComponentStore.GetSignatureContribution(messageToSign, key);
+			if (!signatureContribution) {
+				return true;
+			}
+
+			allSignatureContributions.push({
+				PubKeyHex: key,
+				SignatureContribution: signatureContribution,
+				SignatureContributionHex: this.signatureDataCodec.EncodeSignatureContribution(signatureContribution)
+			});
+		});
 
 		this.myPrivateKeys.forEach((privateKey) => {
 			let pubKey = this.blockSigner.GetPublicKeyFromPrivate(privateKey);
@@ -209,10 +240,15 @@ class SignTransactionAnnounceSignatureContributionPhase extends BaseSigningPhase
 			return a.PubKeyHex.localeCompare(b.PubKeyHex);
 		});
 
-		if (this.KNOWN_TRANSACTIONS.indexOf(messageToSign) === -1) {
-			console.log('Signature contributions for "'+messageToSign+'":');
-			console.log(allSignatureContributions);
+		if (messageToSign === 'FC86A202843AA75389383FA0C5ACE814B948B7CB0FBA428CC378ED83B84D9364') {
+				console.log('Signature contributions for "'+messageToSign+'":');
+				console.log(allSignatureContributions);
 		}
+
+		// if (this.KNOWN_TRANSACTIONS.indexOf(messageToSign) === -1) {
+		// 	console.log('Signature contributions for "'+messageToSign+'":');
+		// 	console.log(allSignatureContributions);
+		// }
 
 		return allSignatureContributions.map((obj) => {
 			return obj.SignatureContribution;
@@ -223,11 +259,11 @@ class SignTransactionAnnounceSignatureContributionPhase extends BaseSigningPhase
 		let allRPoints = [];
 		let requiredPubKeysHex = this.getAllPubKeysHex(messageToSign);
 
-		if (this.latestState.ForeignRPoints[messageToSign]) {
-			Object.keys(this.latestState.ForeignRPoints[messageToSign]).forEach((key) => {
+		if (this.latestState.SignatureComponentStore.GetAllRPoints(messageToSign)) {
+			Object.keys(this.latestState.SignatureComponentStore.GetAllRPoints(messageToSign)).forEach((key) => {
 				allRPoints.push({
 					PubKeyHex: key,
-					RPoint: this.latestState.ForeignRPoints[messageToSign][key]
+					RPoint: this.latestState.SignatureComponentStore.GetRPoint(messageToSign, key)
 				});
 			});
 		}
@@ -263,6 +299,24 @@ class SignTransactionAnnounceSignatureContributionPhase extends BaseSigningPhase
 
 	getAllPubKeysHex(messageToSign) {
 		return this.latestState.AccountTree.GetPubKeysHexForTransactionHash(messageToSign);
+	}
+
+	getAllPubKeysForTransactionAreMine() {
+		let result = true;
+
+		let allPubKeysHex = this.getAllPubKeysHex(this.messageToSign);
+		let myPubKeysHex = this.myPubKeys.map((pubKey) => {
+			return this.signatureDataCodec.EncodePublicKey(pubKey);
+		});
+
+		allPubKeysHex.forEach((pubKeyHex) => {
+			if (myPubKeysHex.indexOf(pubKeyHex) === -1) {
+				result = false;
+				return false;
+			}
+		});
+
+		return result;
 	}
 }
 

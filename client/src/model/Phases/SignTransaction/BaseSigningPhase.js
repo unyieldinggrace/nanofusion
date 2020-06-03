@@ -27,7 +27,6 @@ class BaseSigningPhase extends BasePhase {
 	checkIncomingMessageIsValid(data, signedValueKey) {
 		this.checkPubKeyExists(data.Data.PubKey);
 		this.checkIncomingMessageSignature(data.Data[signedValueKey], data.Data.Signature, data.Data.PubKey);
-		this.ensureDataStructuresAreDefined(data.Data.MessageToSign);
 	}
 
 	checkPubKeyExists(pubKeyHex) {
