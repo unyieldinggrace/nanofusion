@@ -6,9 +6,12 @@ NanoFusion is a trustless mixing protocol for the Nano cryptocurrency. It is loo
 
 If you want to actually try running the software, see [GettingStarted.md](GettingStarted.md).
 
+If you want to try reading the code, a good starting point is [testblocksigning.js](https://github.com/unyieldinggrace/nanofusion/blob/master/experiments/testblocksigning.js), which gives a concise demonstration of signing a block with an aggregated signature and verifying it as if it were a standard Nano block. The rest of the repo is mostly to do with communications between signing parties.
+
 ### See it in action
-* Demo video: [https://www.youtube.com/watch?v=E-m64VPORbw](https://www.youtube.com/watch?v=E-m64VPORbw)
+* Joint-Account Demo: [https://www.youtube.com/watch?v=E-m64VPORbw](https://www.youtube.com/watch?v=E-m64VPORbw)
 * Video whitepaper: [https://www.youtube.com/watch?v=CtMMETZcAQY](https://www.youtube.com/watch?v=CtMMETZcAQY)
+* Mixing Demo: [https://www.youtube.com/watch?v=JScTUJr8jac](https://www.youtube.com/watch?v=CtMMETZcAQY)
 
 ### Status and Security Issues
 

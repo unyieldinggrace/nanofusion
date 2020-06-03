@@ -7,14 +7,14 @@ class NanoNodeClient {
 	}
 
 	async GetAccountInfo(account) {
-		return this.getCachedAccountInfo(account);
+		// return this.getCachedAccountInfo(account);
 
-		// let response = await axios.post(this.NANO_NODE_ENDPOINT+'/api/v2', {
-		// 	action: "account_info",
-		// 	account: account
-		// });
-		//
-		// return response.data;
+		let response = await axios.post(this.NANO_NODE_ENDPOINT+'/api/v2', {
+			action: "account_info",
+			account: account
+		});
+
+		return response.data;
 
 		// .then((response) => {
 		// 	console.log(response);

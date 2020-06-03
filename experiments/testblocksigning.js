@@ -111,7 +111,7 @@ function getSignatureContribution(aggregatedRPoint, pubKeys, message, playerData
 	let kHash = getKHash(aggregatedRPoint, aggregatedPublicKeyPoint, message);
 
 	let signatureContribution = kHash.mul(ec.decodeInt(playerData['secretKeyBytes']));
-	signatureContribution = signatureContribution.mul(aHashSignatureComponent); // not absolutely certain about the order of operations here.
+	signatureContribution = signatureContribution.mul(aHashSignatureComponent);
 	signatureContribution = sigComponents['rHash'].add(signatureContribution); // bigint addition
 	signatureContribution = signatureContribution.umod(ec.curve.n); // appears to not be needed? Rust implementation doesn't seem to have it, even for single sig.
 
@@ -160,15 +160,15 @@ function hexToByteArray (hexString) {
 	return new Uint8Array(a);
 }
 
-// let blockHash = hexToByteArray('E03D646E37DAE61E4D21281054418EF733CCFB9943B424B36B203ED063340A88'); // hash of test block (
-let blockHash = hexToByteArray('FC86A202843AA75389383FA0C5ACE814B948B7CB0FBA428CC378ED83B84D9364'); // hash of test block (
+// let blockHash = hexToByteArray('E03D646E37DAE61E4D21281054418EF733CCFB9943B424B36B203ED063340A88'); // hash of test block (from joint-account demo).
+let blockHash = hexToByteArray('FC86A202843AA75389383FA0C5ACE814B948B7CB0FBA428CC378ED83B84D9364'); // hash of test block (from mix demo).
 
-// let playerData1 = getPlayerData('0255A76E9B6F30DB3A201B9F4D07176B518CB24212A5A5822ECE9C5C17C4B9B5');
-let playerData1 = getPlayerData('4EB76F58195746851E24C10F131D9F1BE5AB433707F57A66609147669688A227'); // 0.02
+// let playerData1 = getPlayerData('0255A76E9B6F30DB3A201B9F4D07176B518CB24212A5A5822ECE9C5C17C4B9B5'); // joint-account demo.
+let playerData1 = getPlayerData('4EB76F58195746851E24C10F131D9F1BE5AB433707F57A66609147669688A227'); // 0.02 account (mix demo).
 let signatureComponents1 = getSignatureComponentsForPlayer(playerData1, blockHash);
 
-// let playerData2 = getPlayerData('A1D8928B2599FAA13BF96CD07CB8306069C88C9FDF0C8E65E14F8985AC1C1BC9');
-let playerData2 = getPlayerData('79FF486DADC60D7045CFEB509F9E977CD79D640489F323C07A8ABABF574A2373'); // 0.01 (solo)
+// let playerData2 = getPlayerData('A1D8928B2599FAA13BF96CD07CB8306069C88C9FDF0C8E65E14F8985AC1C1BC9'); // joint-account demo.
+let playerData2 = getPlayerData('79FF486DADC60D7045CFEB509F9E977CD79D640489F323C07A8ABABF574A2373'); // 0.01 (solo account, mix demo).
 let signatureComponents2 = getSignatureComponentsForPlayer(playerData2, blockHash);
 
 // Adding extra signatories works just fine. But this one is commented out by default so that this file matches the
@@ -183,6 +183,7 @@ let nanoAddresses = [
 	// playerData3.nanoAddress,
 ];
 
+console.log('Signing account nano addresses:');
 console.log(nanoAddresses);
 
 let pubKeys = [
@@ -190,10 +191,6 @@ let pubKeys = [
 	playerData2.publicKeyPoint,
 	// playerData3.publicKeyPoint,
 ];
-
-console.log(pubKeys.map((pubKey) => {
-	return byteArrayToHex(ec.encodePoint(pubKey));
-}));
 
 let RPoints = [
 	signatureComponents1.RPoint,
@@ -212,11 +209,6 @@ let signatureContributions = [
 	// signatureContribution3,
 ];
 
-console.log('Signature Contributions: ');
-console.log(signatureContributions.map((sigContribution) => {
-	return byteArrayToHex(ec.encodeInt(sigContribution));
-}));
-
 let aggregatedSignature = getAggregatedSignature(signatureContributions, aggregatedRPoint);
 
 let aggregatedPublicKeyPoint = getAggregatedPublicKeyPoint(pubKeys);
@@ -232,16 +224,3 @@ console.log('Nano verification passed: '+nanocurrency.verifyBlock({
 	signature: aggregatedSignature.toHex(),
 	publicKey: aggPubKeyHex
 }));
-
-
-console.log('Key Map:');
-[
-	'C40FFAFA3A0D954AE057FE3CFAFEAF2D35471E1F49814F45F7B751D78DAF4577',
-	'4EB76F58195746851E24C10F131D9F1BE5AB433707F57A66609147669688A227',
-	'8494C2401D47BDC7ACA23042C8F201789CDD52CC55A62F0A1F845D6FAE1F834A',
-	'12C5ADDE284816ED73C6791C2E2AA47298B4A6C7228C41421E4CA68E52E2655A',
-	'79FF486DADC60D7045CFEB509F9E977CD79D640489F323C07A8ABABF574A2373'
-].forEach((secret) => {
-	let playerData = getPlayerData(secret);
-	console.log('Private: '+secret+' Public: '+byteArrayToHex(playerData.publicKeyBytes)+' Nano: '+playerData.nanoAddress);
-});

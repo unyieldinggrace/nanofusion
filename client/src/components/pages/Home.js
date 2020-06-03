@@ -109,7 +109,7 @@ class Home extends Component {
 					</Row>
 					<Row>
 						<Col>
-							{/*<YouTube videoId="E-m64VPORbw" opts={{height: '390', width: '640'}} />*/}
+							<YouTube videoId="E-m64VPORbw" opts={{height: '390', width: '640'}} />
 						</Col>
 					</Row>
 					<Row>
@@ -119,7 +119,7 @@ class Home extends Component {
 					</Row>
 					<Row>
 						<Col>
-							{/*<YouTube videoId="CtMMETZcAQY" opts={{height: '390', width: '640'}} />*/}
+							<YouTube videoId="CtMMETZcAQY" opts={{height: '390', width: '640'}} />
 						</Col>
 					</Row>
 					<Row>
@@ -129,7 +129,7 @@ class Home extends Component {
 					</Row>
 					<Row>
 						<Col>
-							{/*<YouTube videoId="JScTUJr8jac" opts={{height: '390', width: '640'}} />*/}
+							<YouTube videoId="JScTUJr8jac" opts={{height: '390', width: '640'}} />
 						</Col>
 					</Row>
 					<Row style={{marginTop: '5em'}}>
