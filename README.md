@@ -11,7 +11,7 @@ If you want to try reading the code, a good starting point is [testblocksigning.
 ### See it in action
 * Joint-Account Demo: [https://www.youtube.com/watch?v=E-m64VPORbw](https://www.youtube.com/watch?v=E-m64VPORbw)
 * Video whitepaper: [https://www.youtube.com/watch?v=CtMMETZcAQY](https://www.youtube.com/watch?v=CtMMETZcAQY)
-* Mixing Demo: [https://www.youtube.com/watch?v=JScTUJr8jac](https://www.youtube.com/watch?v=CtMMETZcAQY)
+* Mixing Demo: [https://www.youtube.com/watch?v=JScTUJr8jac](https://www.youtube.com/watch?v=JScTUJr8jac)
 
 ### Status and Security Issues
 
