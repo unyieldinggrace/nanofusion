@@ -8,7 +8,7 @@
   "license": "MIT",
   "dependencies": {
     "bn.js": "^5.1.1",
-    "elliptic": "^6.5.2",
+    "elliptic": "^6.5.3",
     "nanocurrency": "^2.4.0"
   }
 }
