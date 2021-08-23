@@ -24,8 +24,6 @@ test('When GenerateWorkForBlockHash is called, then correct work is returned.', 
 	t.true(workValidated);
 });
 
-// }
-
 let getTestObjects = () => {
 	return new NanoPoWGenerator();
 }

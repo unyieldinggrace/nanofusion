@@ -1,0 +1,6 @@
+# DEX with Nano as Base Asset (ala Bisq).
+
+I investigated Bisq as a way to buy Monero. However, having to pay BTC tx fees makes it a bit less attractive.
+I'm fairly certain that a similar system could be built using NanoFusion escrow principles.
+
+See here for more details: https://bisq.wiki/Dispute_resolution
